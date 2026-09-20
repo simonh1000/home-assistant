@@ -20,7 +20,7 @@ To make the "Tuesday Night Override" work, you must create **one** Helper in Hom
 
 ## 📂 Scripts Summary
 
-### 1. kitchen.yaml (Active Protection)
+### 1. peak-alert.yaml (Active Protection)
 *   **Logic:** Pauses EV if house draw > 6.5 kW for 5 minutes.
 
 ### 2. ev-lockout.yaml (Scheduled)
