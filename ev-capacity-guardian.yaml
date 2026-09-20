@@ -5,7 +5,7 @@ description: >
   
   Logic:
   1. PAUSE if house load > 6.5kW for 5 mins (prevents 15-min average > 6kW).
-  2. PAUSE during dinner window (18:30 - 20:45).
+  2. PAUSE during dinner window (18:15 - 20:00).
   3. RESUME when house load is < 4.0kW for 10 mins.
   4. RESUME at 06:00 (safety check for morning departure).
 
