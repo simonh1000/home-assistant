@@ -1,0 +1,6 @@
+ev_guardian_yielding:
+  name: "EV Guardian: Yielding"
+  icon: mdi:ev-station
+ev_guardian_quiet:
+  name: "EV Guardian: House Quiet"
+  icon: mdi:home-silent

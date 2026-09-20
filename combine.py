@@ -7,8 +7,9 @@ from datetime import datetime
 from pathlib import Path
 
 # --- Configuration ---
-AUTOMATIONS_FILE = "automations.yaml"
-SCRIPTS_FILE = "scripts.yaml"
+DIST_DIR = Path("dist")
+AUTOMATIONS_FILE = DIST_DIR / "automations.yaml"
+SCRIPTS_FILE = DIST_DIR / "scripts.yaml"
 SMB_TARGET = "//192.168.0.183/config"
 SMB_HOST = "192.168.0.183"
 
@@ -35,7 +36,7 @@ def get_yaml_files():
     scripts = []
     
     for f in all_files:
-        if f.name in [AUTOMATIONS_FILE, SCRIPTS_FILE]:
+        if f.name in ["automations.yaml", "scripts.yaml"]:
             continue
         
         if f.name.endswith(".script.yaml"):
@@ -61,6 +62,8 @@ yaml.add_representer(str, str_presenter)
 def write_combined_file(output_path, files, is_script=False):
     if not files:
         return False
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     header = "# AUTO-GENERATED — DO NOT EDIT MANUALLY. Edit the individual source files instead.\n\n"
 
@@ -122,9 +125,9 @@ def deploy(files_to_deploy):
     if existing_mount and os.path.exists(existing_mount):
         print(f"Found existing mount at {existing_mount}. Deploying...")
         for f in files_to_deploy:
-            if os.path.exists(f):
+            if f.exists():
                 print(f"Copying {f}...")
-                subprocess.run(["cp", f, existing_mount], check=True)
+                subprocess.run(["cp", str(f), existing_mount], check=True)
         print("Successfully deployed to existing mount.")
         return
 
@@ -139,9 +142,9 @@ def deploy(files_to_deploy):
         ], check=True)
         
         for f in files_to_deploy:
-            if os.path.exists(f):
+            if f.exists():
                 print(f"Copying {f}...")
-                subprocess.run(["cp", f, temp_mount], check=True)
+                subprocess.run(["cp", str(f), temp_mount], check=True)
         
         subprocess.run(["umount", temp_mount], check=True)
         print(f"Successfully deployed to {SMB_TARGET}")

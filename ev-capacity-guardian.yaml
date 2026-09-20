@@ -45,6 +45,10 @@ triggers:
   - trigger: time_pattern
     seconds: "/30"
     id: "resume_check"
+  # Safety net: force resume by 22:30 regardless of quiet/yielding state.
+  - trigger: time
+    at: "22:30:00"
+    id: "safety_net"
 
 conditions: []
 
@@ -175,5 +179,24 @@ actions:
               message: >
                 [{{ now().strftime('%H:%M') }}] House has been quiet and the
                 Guardian minimum pause has elapsed.
-
+      # 8. Safety net: force resume by 22:30 regardless of quiet/yielding state.
+      - conditions:
+          - condition: trigger
+            id: "safety_net"
+          - condition: state
+            entity_id: sensor.ohme_home_pro_delta_11kw_status
+            state: "paused"
+        sequence:
+          - action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: smart_charge }
+          - action: input_boolean.turn_off
+            target:
+              entity_id:
+                - input_boolean.ev_guardian_yielding
+                - input_boolean.ev_guardian_quiet
+          - action: script.notify_both_phones
+            data:
+              title: "EV Resumed"
+              message: "[{{ now().strftime('%H:%M') }}] 22:30 safety net — resumed regardless of house load state."
 mode: single
