@@ -1,7 +1,7 @@
 # Agent Instructions
 
 ## Combine
-- Do not attempt to run combine.sh after each change
+- Do not attempt to run `combine.sh` after each change
 
 ## Git & Commits
 - NEVER perform `git commit` or `git push` unless explicitly asked by the user.
