@@ -7,6 +7,8 @@ still allowing a roughly 70% overnight top-up when needed. The charger should
 remain fast at public charge points; any home limit belongs at the charger or in
 home control, not in the car.
 
+Ladenburgers: EF HD-P3-6K0-S1 — that's a 6kW model
+
 ## What matters
 
 - Fluvius uses the highest **fixed 15-minute average import** in each calendar

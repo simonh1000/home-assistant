@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zonnepanelen &amp; batterij — Checklist</title>
+    <style>
+      :root {
+        --ink: #111;
+        --muted: #555;
+        --line: #ddd;
+        --bg: #fafafa;
+        --card: #fff;
+        --accent: #c9a300;
+        --accent-bg: #fff7e0;
+        --context-bg: #f4f4f4;
+        --context-line: #999;
+        --done-bg: #eefbea;
+        --done-line: #4caf50;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+        margin: 0;
+        padding: 14px 14px 40px;
+        line-height: 1.35;
+      }
+      header {
+        border-bottom: 2px solid var(--ink);
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+      }
+      h1 {
+        font-size: 19px;
+        margin: 0 0 2px 0;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 6px 0;
+      }
+      .meta {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .meta b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      section {
+        margin-bottom: 18px;
+      }
+      .sec-head {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        background: var(--ink);
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+      .sec-head .num {
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .sec-head .nl {
+        font-size: 14.5px;
+        font-weight: 700;
+      }
+      .sec-head .en {
+        font-size: 12px;
+        font-style: italic;
+        color: #ccc;
+      }
+      .context {
+        font-size: 12.5px;
+        color: #333;
+        background: var(--context-bg);
+        border-left: 3px solid var(--context-line);
+        padding: 7px 10px;
+        border-radius: 0 4px 4px 0;
+        margin: 0 0 10px 0;
+      }
+      .context .en {
+        color: var(--muted);
+        font-style: italic;
+        display: block;
+        margin-top: 3px;
+      }
+      .highlight {
+        font-size: 12.5px;
+        background: var(--accent-bg);
+        border-left: 3px solid var(--accent);
+        padding: 9px 11px;
+        border-radius: 0 4px 4px 0;
+        margin: 0 0 10px 0;
+      }
+      .highlight .label {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .highlight .en {
+        color: #6b5900;
+        font-style: italic;
+        display: block;
+        margin-top: 6px;
+      }
+      .item {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .item.done {
+        background: var(--done-bg);
+        border-color: var(--done-line);
+      }
+      .item-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .q-nl {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .q-en {
+        font-style: italic;
+        color: var(--muted);
+        font-size: 12.5px;
+        margin-top: 2px;
+      }
+      .notes {
+        width: 100%;
+        margin-top: 8px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        font-family: inherit;
+        font-size: 14px;
+        padding: 7px 8px;
+        resize: vertical;
+        min-height: 34px;
+      }
+      .notes::placeholder {
+        color: #aaa;
+        font-style: italic;
+      }
+      .subrow {
+        margin-top: 8px;
+      }
+      .subrow-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 3px;
+      }
+      .subrow-label .en {
+        font-weight: 400;
+        font-style: italic;
+        color: var(--muted);
+      }
+      .choice-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .choice {
+        position: relative;
+      }
+      .choice input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        inset: 0;
+        margin: 0;
+        cursor: pointer;
+      }
+      .choice span {
+        display: inline-block;
+        padding: 6px 13px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        font-size: 13px;
+        background: #fff;
+        color: var(--ink);
+      }
+      .choice input[type="radio"]:checked + span {
+        background: var(--done-line);
+        border-color: var(--done-line);
+        color: #fff;
+        font-weight: 600;
+      }
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .progress {
+        flex: 1;
+        height: 6px;
+        background: var(--line);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: var(--done-line);
+        width: 0%;
+        transition: width 0.2s;
+      }
+      button.reset {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        font-size: 12px;
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+      footer {
+        margin-top: 10px;
+        font-size: 11px;
+        color: #999;
+        text-align: center;
+      }
+      .savehint {
+        font-size: 11px;
+        color: #999;
+        text-align: center;
+        margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Zonnepanelen &amp; batterij — checklist</h1>
+      <p class="subtitle">Solar &amp; battery — electrician checklist</p>
+      <div class="meta">
+        <b>Week van 22 september 2026</b> · Wezembeek-Oppem
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <span id="progress-label">0 / 11 afgevinkt</span>
+      <div class="progress">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <button class="reset" onclick="resetAll()">Reset</button>
+    </div>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">1</span>
+        <span class="nl">Basischeck — zekeringkast</span>
+        <span class="en">Basic check — fuse box</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> algemene achtergrond noteren zolang de kast toch open is —
+        niet gebonden aan Ohme of EcoFlow specifiek.
+        <span class="en"
+          ><b>Aim:</b> capture general background while the box is open anyway —
+          not tied to Ohme or EcoFlow specifically.</span
+        >
+      </div>
+
+      <div class="item" data-id="kitchen-phases">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Op welke fase(n) zitten de kookplaat, oven en droogkast?
+            </div>
+            <div class="q-en">
+              Which phase(s) are the hob, oven, and dryer on?
+            </div>
+          </div>
+        </div>
+
+        <div class="subrow">
+          <div class="subrow-label">
+            Kookplaat <span class="en">— Hob</span>
+          </div>
+          <div style="font-size: 13px; color: var(--muted)">
+            Al bevestigd via het schema van Hendrickx &amp; Co: de kookplaat is
+            3-fasig aangesloten (4P–25A), dus niet op één specifieke fase — geen
+            vraag nodig.<br /><span class="en"
+              >Already confirmed via the Hendrickx &amp; Co diagram: the hob is
+              wired three-phase (4P–25A), so it's not on one specific phase — no
+              question needed.</span
+            >
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">Oven <span class="en">— Oven</span></div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="phase-oven"
+                value="L1"
+                onchange="saveChoice(this)"
+              /><span>L1</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="phase-oven"
+                value="L2"
+                onchange="saveChoice(this)"
+              /><span>L2</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="phase-oven"
+                value="L3"
+                onchange="saveChoice(this)"
+              /><span>L3</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="phase-oven"
+                value="?"
+                onchange="saveChoice(this)"
+              /><span>? Onbekend</span></label
+            >
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">
+            Droogkast <span class="en">— Dryer</span>
+          </div>
+          <div
+            style="font-size: 12.5px; color: var(--muted); margin-bottom: 4px"
+          >
+            Geen eigen zekering gevonden in de kringlijst — waarschijnlijk
+            gewoon op een stopcontact-kring. Vraag welk stopcontact/kring het
+            is, en pas dan de fase.<br /><span class="en"
+              >No dedicated breaker found in the circuit list — probably just
+              plugged into a regular socket circuit. Ask which socket/circuit it
+              is, then the phase.</span
+            >
+          </div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="phase-dryer"
+                value="L1"
+                onchange="saveChoice(this)"
+              /><span>L1</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="phase-dryer"
+                value="L2"
+                onchange="saveChoice(this)"
+              /><span>L2</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="phase-dryer"
+                value="L3"
+                onchange="saveChoice(this)"
+              /><span>L3</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="phase-dryer"
+                value="?"
+                onchange="saveChoice(this)"
+              /><span>? Onbekend</span></label
+            >
+          </div>
+        </div>
+
+        <textarea
+          class="notes"
+          placeholder="Extra notitie (optioneel)… — Extra note (optional)…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="main-fuse">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Wat is de effectieve hoofdzekering?
+              <span
+                style="font-weight: 400; font-size: 12px; color: var(--muted)"
+                >(verwacht 3×40A, al bevestigd via schema + keuringsverslag —
+                kort bevestigen)</span
+              >
+            </div>
+            <div class="q-en">
+              What is the actual main fuse rating?
+              <span style="font-style: italic; font-size: 12px"
+                >(expected 3×40A, already confirmed via the diagram + inspection
+                report — quick confirm)</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="main-fuse-choice"
+                value="3x25A"
+                onchange="saveChoice(this)"
+              /><span>3×25A</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="main-fuse-choice"
+                value="3x32A"
+                onchange="saveChoice(this)"
+              /><span>3×32A</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="main-fuse-choice"
+                value="3x40A"
+                onchange="saveChoice(this)"
+              /><span>3×40A</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="main-fuse-choice"
+                value="3x50A"
+                onchange="saveChoice(this)"
+              /><span>3×50A</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="main-fuse-choice"
+                value="3x63A"
+                onchange="saveChoice(this)"
+              /><span>3×63A</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="main-fuse-choice"
+                value="anders"
+                onchange="saveChoice(this)"
+              /><span>Anders — Other</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Indien 'Anders': waarde hier — If 'Other': value here"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="free-space">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Hoeveel vrije plaats blijft er over in de zekeringkast (voor bv.
+              een warmtepomp later)?
+            </div>
+            <div class="q-en">
+              How much free space is left in the fuse box (e.g. for a heat pump
+              later)?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="free-space-choice"
+                value="geen"
+                onchange="saveChoice(this)"
+              /><span>Geen — None</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="free-space-choice"
+                value="weinig"
+                onchange="saveChoice(this)"
+              /><span>Weinig — A little</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="free-space-choice"
+                value="genoeg"
+                onchange="saveChoice(this)"
+              /><span>Genoeg voor 1 toestel — Enough for 1</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="free-space-choice"
+                value="veel"
+                onchange="saveChoice(this)"
+              /><span>Veel — Plenty</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Aantal modules, specifiek… — Module count, specifics…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">2</span>
+        <span class="nl">Ohme — huidige opstelling</span>
+        <span class="en">Ohme — current setup</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> enkel verifiëren wat er al staat — pure visuele inspectie.
+        <u>Geen instellingen wijzigen</u> op de Ohme; dat loopt apart via de
+        Ohme-installateur.
+        <span class="en"
+          ><b>Aim:</b> just verify what's already there — pure visual
+          inspection. <u>Do not change any Ohme settings</u>; that's running
+          separately via the Ohme installer.</span
+        >
+      </div>
+
+      <div class="highlight">
+        <span class="label"
+          >Ohme-laadpaal — wat we zoeken / what we're looking for</span
+        >
+        Verwacht: <b>3 CT-klemmen, één per fase</b>, dicht bij de hoofdmeter,
+        pijl richting <b>het huis</b>. We denken dat alle 3 al geplaatst zijn,
+        maar dit is nooit bevestigd. Graag tellen, richting controleren, en
+        close-up foto's nemen van elke klem.
+        <u>Geen instellingen wijzigen in de Ohme-app.</u> Volgens het schema van
+        Hendrickx &amp; Co is er een aparte 3-fasige 32A-voeding (kabel XVB 5G6)
+        die hier vermoedelijk bij hoort — ter plaatse bevestigen.
+        <span class="en"
+          >Expected: <b>3 CT clamps, one per phase</b>, close to the main meter,
+          arrow toward <b>the house</b>. We believe all 3 are already fitted,
+          but this was never confirmed. Please count, check direction, and take
+          close-up photos of each clamp.
+          <u>Do not change any Ohme app settings.</u> The Hendrickx &amp; Co
+          diagram shows a separate three-phase 32A feed (cable XVB 5G6) that's
+          presumably this circuit — confirm on site.</span
+        >
+      </div>
+
+      <div class="item" data-id="ohme-clamps">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Ohme CT-klemmen: aantal, plaatsing, richting gecontroleerd +
+              foto's genomen?
+            </div>
+            <div class="q-en">
+              Ohme CT clamps: count, placement, direction checked + photos
+              taken?
+            </div>
+          </div>
+        </div>
+
+        <div class="subrow">
+          <div class="subrow-label">
+            Aantal klemmen <span class="en">— Number of clamps</span>
+          </div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ohme-count"
+                value="1"
+                onchange="saveChoice(this)"
+              /><span>1</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ohme-count"
+                value="2"
+                onchange="saveChoice(this)"
+              /><span>2</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ohme-count"
+                value="3"
+                onchange="saveChoice(this)"
+              /><span>3</span></label
+            >
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">
+            Richting correct (naar het huis)
+            <span class="en">— Direction correct (toward house)</span>
+          </div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ohme-direction"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja — Yes</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ohme-direction"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Nee — No</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ohme-direction"
+                value="deels"
+                onchange="saveChoice(this)"
+              /><span>Deels — Partly</span></label
+            >
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">
+            Foto's genomen <span class="en">— Photos taken</span>
+          </div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ohme-photos"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja — Yes</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ohme-photos"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Nee — No</span></label
+            >
+          </div>
+        </div>
+
+        <textarea
+          class="notes"
+          placeholder="Fasekabels, bijzonderheden… — Phase cables, anything unusual…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="overlap">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Zitten de EcoFlow- en Ohme-klemmen beide stroomopwaarts, zonder
+              elkaar te overlappen?
+            </div>
+            <div class="q-en">
+              Are the EcoFlow and Ohme clamps both upstream, without overlapping
+              each other?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="overlap-choice"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja — Yes</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="overlap-choice"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Nee — No</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="overlap-choice"
+                value="onzeker"
+                onchange="saveChoice(this)"
+              /><span>Onzeker — Unsure</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Extra notitie (optioneel)… — Extra note (optional)…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">3</span>
+        <span class="nl">EcoFlow — wat moet gebeuren</span>
+        <span class="en">EcoFlow — what needs to happen</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> dit is het nieuwe werk van vandaag — de driefasige
+        opstelling en de netwerktoegang die Home Assistant nodig heeft.
+        <span class="en"
+          ><b>Aim:</b> this is today's actual new work — the three-phase setup
+          and the network access Home Assistant needs.</span
+        >
+      </div>
+
+      <div class="highlight">
+        <span class="label"
+          >EcoFlow 3-fasig herkennen / How to recognize the 3-phase EcoFlow
+          unit</span
+        >
+        De omvormer en de batterij bestaan in aparte 1-fasige en 3-fasige
+        hardware-uitvoeringen — niet gewoon dezelfde doos anders bekabeld. Het
+        typeplaatje op de omvormer geeft het definitieve antwoord: een modelcode
+        die begint met <b>HD-P3-</b> is 3-fasig (verwacht: <b>HD-P3-5K0-S1</b>);
+        een code die begint met <b>HD-P1-</b> is 1-fasig — verkeerd toestel.
+        Extra controle: de AC-kabel naar de omvormer moet 5 aders hebben (3
+        fasen + nul + aarde) i.p.v. 3.<br />
+        <span class="en"
+          >The inverter and battery exist as genuinely separate single-phase and
+          three-phase hardware — not the same box wired differently. The
+          nameplate on the inverter is the definitive check: a model code
+          starting with <b>HD-P3-</b> is three-phase (expected:
+          <b>HD-P3-5K0-S1</b>); a code starting with <b>HD-P1-</b> is
+          single-phase — wrong unit. Extra check: the AC cable into the inverter
+          should have 5 cores (3 phases + neutral + earth), not 3.</span
+        >
+      </div>
+
+      <div class="item" data-id="ecoflow-3phase">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              EcoFlow: verwacht de driefasige meter/CT-klemmen (bevestigd door
+              verkoper op 21 aug) — bevestigen dat dit geplaatst wordt.
+            </div>
+            <div class="q-en">
+              EcoFlow: expecting the three-phase meter/CT clamps (confirmed by
+              sales rep 21 Aug) — confirm that's what's fitted.
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-choice"
+                value="bevestigd"
+                onchange="saveChoice(this)"
+              /><span>Bevestigd 3-fasig — Confirmed 3-phase</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-choice"
+                value="nog1fasig"
+                onchange="saveChoice(this)"
+              /><span>Nog 1-fasig — Still single-phase</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-choice"
+                value="onzeker"
+                onchange="saveChoice(this)"
+              /><span>Onzeker — Unsure</span></label
+            >
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">
+            Typeplaatje omvormer <span class="en">— Inverter nameplate</span>
+          </div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-nameplate-choice"
+                value="hd-p3"
+                onchange="saveChoice(this)"
+              /><span>HD-P3-… (3-fasig — three-phase)</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-nameplate-choice"
+                value="hd-p1"
+                onchange="saveChoice(this)"
+              /><span>HD-P1-… (1-fasig — single-phase)</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-nameplate-choice"
+                value="niet-gecontroleerd"
+                onchange="saveChoice(this)"
+              /><span>Nog niet gecontroleerd — Not yet checked</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Volledige modelcode hier noteren (foto ook handig)… — Note the full model code here (a photo helps too)…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="inverter-ip">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Krijgt de omvormer een vast IP-adres / netwerktoegang binnenshuis?
+              (nodig voor Home Assistant — de P1-poort werkt zelf al goed via
+              HomeWizard P1)
+            </div>
+            <div class="q-en">
+              Will the inverter get a fixed IP address / in-home network access?
+              (needed for Home Assistant — the P1 port itself already works fine
+              via HomeWizard P1)
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="inverter-ip-choice"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja — Yes</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="inverter-ip-choice"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Nee — No</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="inverter-ip-choice"
+                value="nogtedoen"
+                onchange="saveChoice(this)"
+              /><span>Nog te doen — Still to do</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="IP-adres, details… — IP address, details…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="modbus-unlock">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              De PowerOcean heeft blijkbaar een Modbus TCP-interface, maar die
+              zit vergrendeld achter een "installer unlock." Kan de installateur
+              dit tijdens de commissioning ontgrendelen? Dat geeft echte lokale,
+              real-time data i.p.v. trage cloud-polling — dezelfde stap vooruit
+              als de HomeWizard P1 al gaf. Gewoon rechtstreeks vragen, niet
+              aannemen dat enkel de cloud kan.
+            </div>
+            <div class="q-en">
+              The PowerOcean apparently has a Modbus TCP interface, but it's
+              locked behind an "installer unlock." Can the installer enable this
+              during commissioning? That would give genuine local, real-time
+              data instead of laggy cloud polling — the same kind of upgrade the
+              HomeWizard P1 already gave. Worth asking outright rather than
+              assuming cloud-only is the only option.
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="modbus-choice"
+                value="ontgrendeld"
+                onchange="saveChoice(this)"
+              /><span>Ontgrendeld — Unlocked</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="modbus-choice"
+                value="niet-mogelijk"
+                onchange="saveChoice(this)"
+              /><span>Niet mogelijk — Not possible</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="modbus-choice"
+                value="weet-niet"
+                onchange="saveChoice(this)"
+              /><span>Weet niet / navragen — Unsure / follow up</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Extra notitie (optioneel)… — Extra note (optional)…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">4</span>
+        <span class="nl">Achtergrond van de installateur</span>
+        <span class="en">Installer background</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> L&amp;S Elektro is bij ons onbekend (geen vindbare reviews,
+        geen bevestigde RESCert- of merkcertificering) — dit even kort
+        aftoetsen, los van het eigenlijke technische werk.
+        <span class="en"
+          ><b>Aim:</b> L&amp;S Elektro is new to us (no findable reviews, no
+          confirmed RESCert or brand certification) — quick to check, separate
+          from the actual technical work.</span
+        >
+      </div>
+
+      <div class="item" data-id="kbo-number">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Ondernemingsnummer (KBO) genoteerd — bv. van offerte/factuur?
+            </div>
+            <div class="q-en">
+              Company registration number (KBO) noted — e.g. from the
+              quote/invoice?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="kbo-choice"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja — Yes</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="kbo-choice"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Nog te doen — Still to do</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Nummer hier noteren… — Note the number here…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="rescert">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Zijn jullie RESCert-gecertificeerd? (relevant voor
+              subsidie-in-aanmerkingkomen van zonne-installatie/batterij)
+            </div>
+            <div class="q-en">
+              Are you RESCert-certified? (relevant for solar/battery subsidy
+              eligibility)
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="rescert-choice"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja — Yes</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="rescert-choice"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Nee — No</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="rescert-choice"
+                value="weet-niet"
+                onchange="saveChoice(this)"
+              /><span>Weet niet / navragen — Unsure / follow up</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Extra notitie (optioneel)… — Extra note (optional)…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="ecoflow-experience">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Eerdere ervaring met EcoFlow PowerOcean (omvormer + batterij)?
+              Referenties of foto's van eerder werk beschikbaar?
+            </div>
+            <div class="q-en">
+              Previous experience with EcoFlow PowerOcean (inverter + battery)?
+              References or photos of past work available?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-exp-choice"
+                value="ja-refs"
+                onchange="saveChoice(this)"
+              /><span>Ja, met referenties — Yes, with references</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-exp-choice"
+                value="ja-norefs"
+                onchange="saveChoice(this)"
+              /><span>Ja, geen referenties — Yes, no references</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-exp-choice"
+                value="eerste-keer"
+                onchange="saveChoice(this)"
+              /><span>Eerste keer — First time</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ecoflow-exp-choice"
+                value="weet-niet"
+                onchange="saveChoice(this)"
+              /><span>Weet niet — Unsure</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Extra notitie (optioneel)… — Extra note (optional)…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+    </section>
+
+    <footer>
+      Energie-dossier — van-sever33 · geheugensteun, geen contract · memory aid,
+      not a contract
+    </footer>
+    <div class="savehint">
+      Opgeslagen op dit toestel/browser · Saved on this device/browser only
+    </div>
+
+    <script>
+      (function () {
+        var STORAGE_PREFIX = "solarChecklist:";
+        var items = document.querySelectorAll(".item");
+
+        function itemId(el) {
+          return el.getAttribute("data-id");
+        }
+
+        function radioGroupNames(el) {
+          var names = [];
+          el.querySelectorAll('.choice-group input[type="radio"]').forEach(
+            function (r) {
+              if (names.indexOf(r.name) === -1) names.push(r.name);
+            },
+          );
+          return names;
+        }
+
+        function loadItem(el) {
+          var id = itemId(el);
+          var textarea = el.querySelector("textarea");
+          try {
+            var note = localStorage.getItem(STORAGE_PREFIX + id + ":note");
+            if (note) textarea.value = note;
+          } catch (e) {
+            /* localStorage unavailable — page still works, just won't remember */
+          }
+        }
+
+        window.saveNote = function (textarea) {
+          var el = textarea.closest(".item");
+          var id = itemId(el);
+          try {
+            localStorage.setItem(STORAGE_PREFIX + id + ":note", textarea.value);
+          } catch (e) {}
+        };
+
+        window.saveChoice = function (radio) {
+          try {
+            if (radio.checked) {
+              localStorage.setItem(
+                STORAGE_PREFIX + "choice:" + radio.name,
+                radio.value,
+              );
+            } else {
+              localStorage.removeItem(STORAGE_PREFIX + "choice:" + radio.name);
+            }
+          } catch (e) {}
+          updateItemDone(radio.closest(".item"));
+          updateProgress();
+        };
+
+        function loadChoices() {
+          document
+            .querySelectorAll('.choice-group input[type="radio"]')
+            .forEach(function (radio) {
+              try {
+                var saved = localStorage.getItem(
+                  STORAGE_PREFIX + "choice:" + radio.name,
+                );
+                if (saved !== null && radio.value === saved)
+                  radio.checked = true;
+              } catch (e) {}
+            });
+        }
+
+        // Tapping an already-selected pill clears it, instead of leaving it stuck selected.
+        // Notes on why this is fiddly:
+        // - The browser flips `checked` to true as part of the click's built-in
+        //   activation steps *before* the "click" event is dispatched, so by the time
+        //   a click handler runs, `checked` already reflects the post-click state.
+        //   To tell whether the tap landed on an already-selected pill, capture the
+        //   prior state on "mousedown" (which fires earlier, before that flip happens).
+        // - Clicking an already-checked radio is a native no-op (nothing to undo), so
+        //   calling preventDefault() on it doesn't just stop a change — it also makes
+        //   the browser run its own "revert" step afterwards, which stomps right back
+        //   over any `checked = false` set inside the same handler. Deferring the
+        //   uncheck to right after the click has fully finished dispatching avoids that.
+        function enableUncheck() {
+          document
+            .querySelectorAll('.choice-group input[type="radio"]')
+            .forEach(function (radio) {
+              radio.addEventListener("mousedown", function () {
+                radio._wasChecked = radio.checked;
+              });
+              radio.addEventListener("click", function () {
+                if (radio._wasChecked) {
+                  setTimeout(function () {
+                    radio.checked = false;
+                    saveChoice(radio);
+                  }, 0);
+                }
+              });
+            });
+        }
+
+        window.updateItemDone = function (el) {
+          if (!el) return;
+          var names = radioGroupNames(el);
+          var allAnswered =
+            names.length > 0 &&
+            names.every(function (name) {
+              return (
+                el.querySelector('input[name="' + name + '"]:checked') !== null
+              );
+            });
+          el.classList.toggle("done", allAnswered);
+        };
+
+        window.updateProgress = function () {
+          var total = items.length;
+          var done = document.querySelectorAll(".item.done").length;
+          document.getElementById("progress-label").textContent =
+            done + " / " + total + " afgevinkt";
+          document.getElementById("progress-fill").style.width =
+            (total ? (done / total) * 100 : 0) + "%";
+        };
+
+        window.resetAll = function () {
+          if (
+            !confirm(
+              "Alles wissen op dit toestel? / Clear everything on this device?",
+            )
+          )
+            return;
+          items.forEach(function (el) {
+            var id = itemId(el);
+            try {
+              localStorage.removeItem(STORAGE_PREFIX + id + ":note");
+            } catch (e) {}
+            el.classList.remove("done");
+            var textarea = el.querySelector("textarea");
+            if (textarea) textarea.value = "";
+          });
+          document
+            .querySelectorAll('.choice-group input[type="radio"]')
+            .forEach(function (radio) {
+              try {
+                localStorage.removeItem(
+                  STORAGE_PREFIX + "choice:" + radio.name,
+                );
+              } catch (e) {}
+              radio.checked = false;
+            });
+          updateProgress();
+        };
+
+        items.forEach(loadItem);
+        loadChoices();
+        enableUncheck();
+        items.forEach(updateItemDone);
+        updateProgress();
+      })();
+    </script>
+  </body>
+</html>
