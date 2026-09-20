@@ -2,22 +2,24 @@ alias: "EV: Capacity Guardian"
 description: >
   Protects the 6kW monthly capacity peak and handles the dinner lockout.
   Approval handling lives in a separate automation (EV: Approval Notifier).
+  Uses sensor.p1_meter_power (Watts) — sensor.p1_meter_active_power does
+  NOT exist; do not reintroduce it.
 
 variables:
   ohme_state: "{{ states('sensor.ohme_home_pro_delta_11kw_status') }}"
 
 triggers:
   - trigger: numeric_state
-    entity_id: sensor.p1_meter_active_power
-    above: 6.5
+    entity_id: sensor.p1_meter_power
+    above: 6500
     for: { minutes: 5 }
     id: "pause_load_high"
   - trigger: time
     at: "18:15:00"
     id: "pause_lockout_start"
   - trigger: numeric_state
-    entity_id: sensor.p1_meter_active_power
-    below: 4.0
+    entity_id: sensor.p1_meter_power
+    below: 4000
     for: { minutes: 10 }
     id: "resume_load_low"
   - trigger: time

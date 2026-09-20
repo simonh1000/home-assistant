@@ -93,7 +93,7 @@ def write_combined_file(output_path, files, is_script=False):
 
     print(f"Done! Consolidated file created at {output_path}")
     return True
-    
+
 def combine():
     """Handle the combination of both automations and scripts."""
     automations, scripts = get_yaml_files()
@@ -151,8 +151,18 @@ def deploy(files_to_deploy):
         if os.path.exists(temp_mount):
             os.rmdir(temp_mount)
 
+def print_reload_reminder():
+    """Print a prominent reminder to reload YAML in Home Assistant."""
+    print("\n" + "="*60)
+    print("REMINDER: You must RELOAD your YAML in Home Assistant:")
+    print("Settings -> Developer Tools -> YAML -> AUTOMATIONS & SCRIPTS")
+    print("="*60 + "\n")
+
 if __name__ == "__main__":
     should_deploy = "--deploy" in sys.argv
     
-    if combine() and should_deploy:
-        deploy([AUTOMATIONS_FILE, SCRIPTS_FILE])
+    if combine():
+        if should_deploy:
+            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE])
+        
+        print_reload_reminder()
