@@ -5,10 +5,19 @@ description: >
 triggers:
   - trigger: time
     at: "07:15:00"
-conditions:
-  - condition: state
+    id: "time_trigger"
+  - trigger: state
     entity_id: input_boolean.ev_deadline_charge_active
-    state: "on"
+    to: "off"
+    id: "manual_off"
+conditions:
+  - condition: or
+    conditions:
+      - condition: trigger
+        id: "manual_off"
+      - condition: state
+        entity_id: input_boolean.ev_deadline_charge_active
+        state: "on"
 actions:
   - action: select.select_option
     target:
