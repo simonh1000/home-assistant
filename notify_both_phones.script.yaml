@@ -1,0 +1,19 @@
+# script.notify_both_phones
+alias: "Notify Both Phones"
+fields:
+  title:
+    example: "EV Paused"
+  message:
+    example: "Something happened"
+sequence:
+  - action: notify.mobile_app_pixel_10
+    data:
+      title: "{{ title }}"
+      message: "{{ message }}"
+      data: { priority: high, ttl: 0, importance: high }
+  - action: notify.mobile_app_pixel_8
+    data:
+      title: "{{ title }}"
+      message: "{{ message }}"
+      data: { priority: high, ttl: 0, importance: high }
+mode: parallel

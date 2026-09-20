@@ -1,48 +1,36 @@
 alias: "EV: Capacity Guardian"
 description: >
-  SINGLE SOURCE OF TRUTH: Protects the 6kW monthly capacity peak and handles 
-  the evening dinner lockout.
-  
-  Logic:
-  1. PAUSE if house load > 6.5kW for 5 mins (prevents 15-min average > 6kW).
-  2. PAUSE during dinner window (18:15 - 20:00).
-  3. RESUME when house load is < 4.0kW for 10 mins.
-  4. RESUME at 06:00 (safety check for morning departure).
+  Protects the 6kW monthly capacity peak and handles the dinner lockout.
+  Approval handling lives in a separate automation (EV: Approval Notifier).
+
+variables:
+  ohme_state: "{{ states('sensor.ohme_home_pro_delta_11kw_status') }}"
 
 triggers:
-  # --- PAUSE TRIGGERS ---
   - trigger: numeric_state
     entity_id: sensor.p1_meter_active_power
     above: 6.5
-    for:
-      minutes: 5
+    for: { minutes: 5 }
     id: "pause_load_high"
-  
   - trigger: time
     at: "18:15:00"
     id: "pause_lockout_start"
-
-  # --- RESUME TRIGGERS ---
   - trigger: numeric_state
     entity_id: sensor.p1_meter_active_power
     below: 4.0
-    for:
-      minutes: 10
+    for: { minutes: 10 }
     id: "resume_load_low"
-
   - trigger: time
     at: "20:00:00"
     id: "resume_lockout_end"
-
   - trigger: time
-    at: "06:00:00"
-    id: "resume_morning"
+    at: "22:30:00"
+    id: "resume_safety_net"
 
 conditions: []
 
 actions:
   - choose:
-      # ACTION: PAUSE
       - conditions:
           - condition: or
             conditions:
@@ -51,29 +39,28 @@ actions:
               - condition: trigger
                 id: "pause_lockout_start"
         sequence:
-          - action: select.select_option
-            target:
-              entity_id: select.ohme_home_pro_delta_11kw_charge_mode
-            data:
-              option: paused
-          - action: notify.mobile_app_pixel_10
-            data:
-              title: "EV Paused"
-              message: "[{{ now().strftime('%H:%M') }}] Reason: {{ 'High House Load' if trigger.id == 'pause_load_high' else 'Dinner Lockout' }}. Protecting your 6kW peak."
-              data:
-                priority: high
-                ttl: 0
-                importance: high
-          - action: notify.mobile_app_pixel_8
-            data:
-              title: "EV Paused"
-              message: "[{{ now().strftime('%H:%M') }}] Reason: {{ 'High House Load' if trigger.id == 'pause_load_high' else 'Dinner Lockout' }}. Protecting your 6kW peak."
-              data:
-                priority: high
-                ttl: 0
-                importance: high
+          - variables:
+              reason: "{{ 'High House Load' if trigger.id == 'pause_load_high' else 'Dinner Lockout' }}"
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ ohme_state == 'charging' }}"
+                sequence:
+                  - action: select.select_option
+                    target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+                    data: { option: paused }
+                  - action: script.notify_both_phones
+                    data:
+                      title: "EV Paused"
+                      message: "[{{ now().strftime('%H:%M') }}] Paused. Reason: {{ reason }}. Protecting your 6kW peak."
+            default:
+              - condition: template
+                value_template: "{{ trigger.id == 'pause_load_high' }}"
+              - action: script.notify_both_phones
+                data:
+                  title: "High Load — Not the EV"
+                  message: "[{{ now().strftime('%H:%M') }}] House load crossed 6.5kW with the EV not charging (status: {{ ohme_state }}). Worth checking what's running."
 
-      # ACTION: RESUME
       - conditions:
           - condition: or
             conditions:
@@ -82,22 +69,19 @@ actions:
               - condition: trigger
                 id: "resume_lockout_end"
               - condition: trigger
-                id: "resume_morning"
-          # Don't resume if we are still in the dinner window
+                id: "resume_safety_net"
           - condition: time
             after: "20:00:00"
             before: "18:15:00"
-          # Don't resume if the car is unplugged
-          - condition: not
-            conditions:
-              - condition: state
-                entity_id: sensor.ohme_home_pro_delta_11kw_status
-                state: "unplugged"
         sequence:
-          - action: select.select_option
-            target:
-              entity_id: select.ohme_home_pro_delta_11kw_charge_mode
-            data:
-              option: smart_charge
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ ohme_state in ['unplugged', 'finished', 'pending_approval'] }}"
+                sequence: []
+            default:
+              - action: select.select_option
+                target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+                data: { option: smart_charge }
 
 mode: single

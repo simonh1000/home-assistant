@@ -7,7 +7,8 @@ from datetime import datetime
 from pathlib import Path
 
 # --- Configuration ---
-OUTPUT_FILE = "automations.yaml"
+AUTOMATIONS_FILE = "automations.yaml"
+SCRIPTS_FILE = "scripts.yaml"
 SMB_TARGET = "//192.168.0.183/config"
 SMB_HOST = "192.168.0.183"
 
@@ -27,59 +28,83 @@ def load_env():
     return config
 
 def get_yaml_files():
-    """Find all .yaml files in root directory excluding the output file."""
-    files = sorted(Path(".").glob("*.yaml"))
-    return [f for f in files if f.name != OUTPUT_FILE]
+    """Find all .yaml files and split them into automations and scripts."""
+    all_files = sorted(Path(".").glob("*.yaml"))
+    
+    automations = []
+    scripts = []
+    
+    for f in all_files:
+        if f.name in [AUTOMATIONS_FILE, SCRIPTS_FILE]:
+            continue
+        
+        if f.name.endswith(".script.yaml"):
+            scripts.append(f)
+        else:
+            automations.append(f)
+            
+    return automations, scripts
 
 def generate_id(filename):
     """Create a Home Assistant ID from a filename (e.g. ev-safety.yaml -> ev_safety)."""
-    return filename.replace(".yaml", "").replace("-", "_")
+    clean_name = filename.replace(".script.yaml", "").replace(".yaml", "")
+    return clean_name.replace("-", "_")
 
-def combine():
-    """Merge individual YAML files into a single master automations.yaml."""
-    yaml_files = get_yaml_files()
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    file_list = ", ".join([f.name for f in yaml_files])
+def str_presenter(dumper, data):
+    """Force YAML to use block scalars (|) for strings with newlines or single quotes to avoid escaping."""
+    if "\n" in data or "'" in data:
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 
-    header = (
-        "###############################################################################\n"
-        "# AUTO-GENERATED MASTER AUTOMATIONS FILE - DO NOT EDIT MANUALLY\n"
-        f"# Generated on: {timestamp}\n"
-        f"# Source files: {file_list}\n"
-        "#\n"
-        "# To update this file:\n"
-        "# 1. Edit the individual .yaml files in this directory.\n"
-        "# 2. Run this script: ./combine.py\n"
-        "###############################################################################\n\n"
-    )
+yaml.add_representer(str, str_presenter)
 
-    master_list = []
-    
-    for yaml_file in yaml_files:
+def write_combined_file(output_path, files, is_script=False):
+    if not files:
+        return False
+
+    header = "# AUTO-GENERATED — DO NOT EDIT MANUALLY. Edit the individual source files instead.\n\n"
+
+    if is_script:
+        master_data = {}
+    else:
+        master_data = []
+
+    for yaml_file in files:
         print(f"Processing {yaml_file.name}...")
         try:
             with open(yaml_file) as f:
                 content = yaml.safe_load(f)
-                
-                # Add the 'id' field required by Home Assistant for UI editing
-                automation = {"id": generate_id(yaml_file.name)}
-                automation.update(content)
-                master_list.append(automation)
-                
+                file_id = generate_id(yaml_file.name)
+
+                if is_script:
+                    master_data[file_id] = content
+                else:
+                    automation = {"id": file_id}
+                    automation.update(content)
+                    master_data.append(automation)
+
         except Exception as e:
             print(f"Error reading {yaml_file.name}: {e}")
             sys.exit(1)
 
-    # Write the file
-    with open(OUTPUT_FILE, "w") as f:
+    with open(output_path, "w") as f:
         f.write(header)
-        yaml.dump(master_list, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
+        yaml.dump(master_data, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
 
-    print(f"\nDone! Consolidated file created at {OUTPUT_FILE}")
+    print(f"Done! Consolidated file created at {output_path}")
     return True
+    
+def combine():
+    """Handle the combination of both automations and scripts."""
+    automations, scripts = get_yaml_files()
+    
+    a_success = write_combined_file(AUTOMATIONS_FILE, automations, is_script=False)
+    s_success = write_combined_file(SCRIPTS_FILE, scripts, is_script=True)
+    
+    return a_success or s_success
 
-def deploy():
-    """Upload the generated file to Home Assistant via SMB."""
+def deploy(files_to_deploy):
+    """Upload the generated files to Home Assistant via SMB."""
     env = load_env()
     user = env.get("HA_USER")
     password = env.get("HA_PASSWORD")
@@ -91,18 +116,17 @@ def deploy():
     existing_mount = None
     for line in mount_output.splitlines():
         if f"//{user}@{SMB_HOST}/config" in line:
-            # Extract path (e.g. /Volumes/config)
             existing_mount = line.split(" on ")[1].split(" (")[0]
             break
 
     if existing_mount and os.path.exists(existing_mount):
         print(f"Found existing mount at {existing_mount}. Deploying...")
-        try:
-            subprocess.run(["cp", OUTPUT_FILE, existing_mount], check=True)
-            print("Successfully deployed to existing mount.")
-            return
-        except subprocess.CalledProcessError:
-            print("Warning: Copy failed. Attempting cleanup/remount...")
+        for f in files_to_deploy:
+            if os.path.exists(f):
+                print(f"Copying {f}...")
+                subprocess.run(["cp", f, existing_mount], check=True)
+        print("Successfully deployed to existing mount.")
+        return
 
     # 2. Fallback: Manual mount (macOS style)
     print(f"Attempting fresh mount of {SMB_TARGET}...")
@@ -113,7 +137,12 @@ def deploy():
             f"//{user}:{password}@{SMB_HOST}/config", 
             temp_mount
         ], check=True)
-        subprocess.run(["cp", OUTPUT_FILE, temp_mount], check=True)
+        
+        for f in files_to_deploy:
+            if os.path.exists(f):
+                print(f"Copying {f}...")
+                subprocess.run(["cp", f, temp_mount], check=True)
+        
         subprocess.run(["umount", temp_mount], check=True)
         print(f"Successfully deployed to {SMB_TARGET}")
     except subprocess.CalledProcessError as e:
@@ -126,4 +155,4 @@ if __name__ == "__main__":
     should_deploy = "--deploy" in sys.argv
     
     if combine() and should_deploy:
-        deploy()
+        deploy([AUTOMATIONS_FILE, SCRIPTS_FILE])

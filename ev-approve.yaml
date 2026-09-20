@@ -1,0 +1,21 @@
+alias: "EV: Approval Button Handler"
+description: Handles the "Approve" button tapped on an EV approval push notification.
+
+triggers:
+  - trigger: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: "OHME_APPROVE"
+
+conditions: []
+
+actions:
+  - action: button.press
+    target:
+      entity_id: button.ohme_home_pro_delta_11kw_approve_charge
+  - action: script.notify_both_phones
+    data:
+      title: "EV Charge Approved"
+      message: "[{{ now().strftime('%H:%M') }}] Approved via notification."
+
+mode: single

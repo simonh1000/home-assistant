@@ -1,0 +1,49 @@
+alias: "EV: Approval Notifier"
+description: >
+  Alerts immediately when a charge needs approval (actionable notification,
+  never auto-approved — this is a deliberate security gate), plus a 22:30
+  reminder if it's still sitting unapproved.
+
+variables:
+  ohme_vehicle: "{{ states('select.ohme_home_pro_delta_11kw_vehicle') }}"
+
+triggers:
+  - trigger: state
+    entity_id: sensor.ohme_home_pro_delta_11kw_status
+    to: "pending_approval"
+    id: "immediate"
+  - trigger: time
+    at: "22:30:00"
+    id: "reminder"
+
+conditions:
+  - condition: template
+    value_template: "{{ trigger.id == 'immediate' or states('sensor.ohme_home_pro_delta_11kw_status') == 'pending_approval' }}"
+
+actions:
+  - action: notify.mobile_app_pixel_10
+    data:
+      title: "EV Charge Needs Approval"
+      message: >
+        [{{ now().strftime('%H:%M') }}] Charge pending for {{ ohme_vehicle }}{{ ' (still waiting)' if trigger.id == 'reminder' else '' }} — check it's expected, then approve.
+      data:
+        priority: high
+        ttl: 0
+        importance: high
+        actions:
+          - action: "OHME_APPROVE"
+            title: "Approve"
+  - action: notify.mobile_app_pixel_8
+    data:
+      title: "EV Charge Needs Approval"
+      message: >
+        [{{ now().strftime('%H:%M') }}] Charge pending for {{ ohme_vehicle }}{{ ' (still waiting)' if trigger.id == 'reminder' else '' }} — check it's expected, then approve.
+      data:
+        priority: high
+        ttl: 0
+        importance: high
+        actions:
+          - action: "OHME_APPROVE"
+            title: "Approve"
+
+mode: single

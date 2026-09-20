@@ -21,6 +21,10 @@ We have consolidated everything into a single "Guardian" to eliminate conflictin
 ### 2. peak-alert.yaml (Awareness)
 *   **Notification Only:** Warns you at **6.0 kW** (after 2 minutes) so you can manually check appliances if needed. No automated actions.
 
+### 📜 Scripts vs Automations
+*   Files ending in `.yaml` (e.g. `peak-alert.yaml`) are combined into **`automations.yaml`**.
+*   Files ending in **`.script.yaml`** (e.g. `charge-test.script.yaml`) are combined into **`scripts.yaml`**.
+
 ---
 
 ## ⚙️ Global State
@@ -33,5 +37,5 @@ To keep the system reliable, we use minimal state:
 
 ## 🚀 How to Update & Upload
 1.  **Consolidate:** Run `./combine.py` in this folder.
-2.  **Upload:** Run `./combine.py --deploy` (requires `.env` setup).
-3.  **Reload:** Go to HA -> **Settings -> Tools -> YAML** -> click **Automations**.
+2.  **Upload:** Run `./combine.py --deploy` (requires `.env` setup). This will upload both `automations.yaml` and `scripts.yaml`.
+3.  **Reload:** Go to HA -> **Settings -> Tools -> YAML** -> click **Automations** and **Scripts**.
