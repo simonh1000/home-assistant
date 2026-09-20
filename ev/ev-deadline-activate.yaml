@@ -5,7 +5,8 @@ description: >
   the next morning.
 triggers:
   - trigger: state
-    entity_id: input_button.ev_charge_by_tomorrow
+    entity_id: input_boolean.ev_deadline_charge_active
+    to: "on"
 conditions:
   - condition: not
     conditions:
@@ -28,9 +29,6 @@ actions:
       entity_id: time.ohme_home_pro_delta_11kw_target_time
     data:
       time: "07:00:00"
-  - action: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.ev_deadline_charge_active
   - action: notify.mobile_app_pixel_10
     data:
       title: "EV Deadline Charging Activated"

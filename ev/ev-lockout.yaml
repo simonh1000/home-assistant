@@ -4,7 +4,7 @@ description: >
   Pauses EV charging during the dinner window when cooking loads are highest,
   ensuring the EV doesn't compete for your 6kW capacity budget.
   Also resumes Smart Charge every morning, so a pause triggered earlier by
-  the kitchen guard or safety breaker never gets stuck indefinitely - unless
+  the peak-alert guard or safety breaker never gets stuck indefinitely - unless
   a deadline-charge session is active (see ev-deadline-activate.yaml), in
   which case this defers to ev-deadline-revert.yaml instead.
 triggers:

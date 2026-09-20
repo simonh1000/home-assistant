@@ -1,37 +1,27 @@
-alias: "Peak Alert: Approaching Monthly Capacity Peak"
+alias: "Peak Alert: Warning Only"
 description: >
-  LOAD SHEDDING: Monitors real-time grid import. 
-  If house draw exceeds 6.5kW for 5 minutes, it sends a critical notification 
-  AND automatically pauses the EV charger to leave room for high-draw appliances.
+  NOTIFICATION ONLY: Sends a warning to your phone if the house load 
+  exceeds 6.0kW for 2 minutes. This provides awareness without 
+  automatically changing any charger states.
 triggers:
   - trigger: numeric_state
     entity_id: sensor.p1_meter_active_power
-    above: 6.5
+    above: 6.0
     for:
-      minutes: 5
+      minutes: 2
 actions:
-  - if:
-      - condition: state
-        entity_id: sensor.ohme_home_pro_delta_11kw_status
-        state: "charging"
-    then:
-      - action: select.select_option
-        target:
-          entity_id: select.ohme_home_pro_delta_11kw_charge_mode
-        data:
-          option: paused
   - action: notify.mobile_app_pixel_10
     data:
-      title: "Capacity Peak Risk!"
-      message: "Grid import > 6kW. EV has been paused (if it was charging) to protect your peak."
+      title: "Peak Warning: 6kW Exceeded"
+      message: "[{{ now().strftime('%H:%M') }}] House load is currently {{ states('sensor.p1_meter_active_power') }}kW. Average peak risk!"
       data:
         priority: high
         ttl: 0
         importance: high
   - action: notify.mobile_app_pixel_8
     data:
-      title: "Capacity Peak Risk!"
-      message: "Grid import > 6kW. EV has been paused (if it was charging) to protect your peak."
+      title: "Peak Warning: 6kW Exceeded"
+      message: "[{{ now().strftime('%H:%M') }}] House load is currently {{ states('sensor.p1_meter_active_power') }}kW. Average peak risk!"
       data:
         priority: high
         ttl: 0
