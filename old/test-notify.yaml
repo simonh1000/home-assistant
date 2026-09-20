@@ -1,23 +1,12 @@
 alias: "DEBUG: Notification Test"
-description: "Sends a test notification every 5 minutes to verify Android connectivity."
+description: "Sends a test notification every 5 minutes."
 triggers:
   - trigger: time_pattern
     minutes: "/5"
 actions:
-  - action: notify.mobile_app_pixel_10
+  - action: script.notify_both_phones
     data:
       title: "HA Energy Test"
-      message: "Test notification at {{ now().strftime('%H:%M:%S') }}. If you see this, your Android is linked!"
-      data:
-        priority: high
-        ttl: 0
-        importance: high
-  - action: notify.mobile_app_pixel_8
-    data:
-      title: "HA Energy Test"
-      message: "Test notification at {{ now().strftime('%H:%M:%S') }}. If you see this, your Android is linked!"
-      data:
-        priority: high
-        ttl: 0
-        importance: high
+      message: "Test notification at {{ now().strftime('%H:%M:%S') }}. Uses new script!"
+      
 mode: single
