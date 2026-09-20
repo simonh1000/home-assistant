@@ -16,7 +16,7 @@ We have consolidated everything into a single "Guardian" to eliminate conflictin
 ### 1. ev-capacity-guardian.yaml (Master Control)
 *   **Power Guard:** Pauses EV if house draw > 6.5 kW for 5 minutes.
 *   **Dinner Lockout:** Automatically pauses EV daily from **18:15 to 20:00**.
-*   **Smart Resume:** Resumes charging when load drops below 4.0kW for 10 minutes, or at 06:00 AM.
+*   **Smart Resume:** Resumes charging when load drops below 4.0kW for 10 minutes, or at 06:00.
 
 ### 2. peak-alert.yaml (Awareness)
 *   **Notification Only:** Warns you at **6.0 kW** (after 2 minutes) so you can manually check appliances if needed. No automated actions.
