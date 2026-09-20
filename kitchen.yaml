@@ -1,0 +1,39 @@
+alias: 'Kitchen Alert: Approaching Monthly Capacity Peak'
+description: >
+  LOAD SHEDDING: Monitors real-time grid import. 
+  If house draw exceeds 6.5kW for 5 minutes, it sends a critical notification 
+  AND automatically pauses the EV charger to leave room for the kitchen appliances.
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.p1_meter_active_power
+    above: 6.5
+    for:
+      minutes: 5
+actions:
+  - if:
+      - condition: state
+        entity_id: sensor.ohme_home_pro_delta_11kw_status
+        state: "charging"
+    then:
+      - action: select.select_option
+        target:
+          entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+        data:
+          option: paused
+  - action: notify.mobile_app_pixel_10
+    data:
+      title: "Capacity Peak Risk!"
+      message: "Grid import > 6kW. EV has been paused (if it was charging) to protect your peak."
+      data:
+        priority: high
+        ttl: 0
+        importance: high
+  - action: notify.mobile_app_pixel_8
+    data:
+      title: "Capacity Peak Risk!"
+      message: "Grid import > 6kW. EV has been paused (if it was charging) to protect your peak."
+      data:
+        priority: high
+        ttl: 0
+        importance: high
+mode: single

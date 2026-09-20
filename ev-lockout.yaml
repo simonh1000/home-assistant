@@ -1,0 +1,69 @@
+alias: "EV: Evening Lockout"
+description: >
+  CLEAN SCHEDULING: Replaces the 'Fake Tariff' workaround.
+  Pauses EV charging during the dinner window when cooking loads are highest,
+  ensuring the EV doesn't compete for your 6kW capacity budget.
+  Also resumes Smart Charge every morning, so a pause triggered earlier by
+  the kitchen guard or safety breaker never gets stuck indefinitely - unless
+  a deadline-charge session is active (see ev-deadline-activate.yaml), in
+  which case this defers to ev-deadline-revert.yaml instead.
+triggers:
+  - trigger: time
+    at: "18:30:00"
+    id: "lockout_start"
+  - trigger: time
+    at: "20:45:00"
+    id: "lockout_end"
+  - trigger: time
+    at: "06:00:00"
+    id: "morning_resume"
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "lockout_start"
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: sensor.ohme_home_pro_delta_11kw_status
+                state: "unplugged"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+            data:
+              option: paused
+      - conditions:
+          - condition: trigger
+            id: "lockout_end"
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: sensor.ohme_home_pro_delta_11kw_status
+                state: "unplugged"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+            data:
+              option: smart_charge
+      - conditions:
+          - condition: trigger
+            id: "morning_resume"
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: sensor.ohme_home_pro_delta_11kw_status
+                state: "unplugged"
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: input_boolean.ev_deadline_charge_active
+                state: "on"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+            data:
+              option: smart_charge
+mode: single

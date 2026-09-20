@@ -1,0 +1,64 @@
+alias: "EV: Deadline Charge - Peak Guard"
+description: >
+  Only armed while input_boolean.ev_deadline_charge_active is on (see
+  ev-deadline-activate.yaml). Tighter than the normal kitchen/safety guards
+  on purpose: LOAD LIMIT is still unfixed (~32A/22kW, no real hardware
+  ceiling), so this automation is the only thing actually bounding the peak
+  during an overnight deadline session. Pauses at 6.0kW sustained for 2
+  minutes (not the usual 5 - see discussion on quarter-boundary risk with
+  a longer detection window), and resumes deadline charging once load has
+  been back below 5.5kW for 5 minutes, so it can keep making progress
+  overnight in bursts rather than staying paused till the morning revert.
+  kitchen.yaml (6.5kW/5min) and ev-safety.yaml (9kW/8min) still run too as
+  extra layers - not a conflict, just redundant coverage.
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.p1_meter_active_power
+    above: 6.0
+    for:
+      minutes: 2
+    id: "peak_high"
+  - trigger: numeric_state
+    entity_id: sensor.p1_meter_active_power
+    below: 5.5
+    for:
+      minutes: 5
+    id: "peak_clear"
+conditions:
+  - condition: state
+    entity_id: input_boolean.ev_deadline_charge_active
+    state: "on"
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "peak_high"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+            data:
+              option: paused
+          - action: notify.mobile_app_pixel_10
+            data:
+              title: "EV Deadline Charge Paused"
+              message: "House draw hit 6.0kW during deadline charging. Paused to protect the peak - will resume once it's clear."
+              data:
+                priority: high
+                ttl: 0
+                importance: high
+      - conditions:
+          - condition: trigger
+            id: "peak_clear"
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: sensor.ohme_home_pro_delta_11kw_status
+                state: "unplugged"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+            data:
+              option: smart_charge
+mode: single
