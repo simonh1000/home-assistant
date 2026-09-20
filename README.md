@@ -2,6 +2,8 @@
 
 This system manages EV charging and house load to ensure an approx **6.0 kW** monthly average peak in Flanders, Belgium.
 
+The car currently is set to limit charging to 8A
+
 ## 🧠 The Logic (15-Min Window)
 To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 *   **Active Defense:** We monitor for **5 minutes above 6.5kW**.
