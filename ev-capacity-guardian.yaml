@@ -1,89 +1,179 @@
 alias: "EV: Capacity Guardian"
 description: >
-  Protects the 6kW monthly capacity peak and handles the dinner lockout.
-  Approval handling lives in a separate automation (EV: Approval Notifier).
-  Uses sensor.p1_meter_power (Watts) — sensor.p1_meter_active_power does
-  NOT exist; do not reintroduce it.
+  Makes the EV yield to sustained house load and reserves the dinner period.
+  Requires two UI-created helpers: input_boolean.ev_guardian_yielding and
+  input_boolean.ev_guardian_quiet. Uses sensor.p1_meter_power in Watts.
 
 variables:
   ohme_state: "{{ states('sensor.ohme_home_pro_delta_11kw_status') }}"
+  guardian_yielding: "{{ is_state('input_boolean.ev_guardian_yielding', 'on') }}"
+  guardian_quiet: "{{ is_state('input_boolean.ev_guardian_quiet', 'on') }}"
 
 triggers:
+  # A short confirmation filters refrigerator/freezer compressor spikes.
   - trigger: numeric_state
     entity_id: sensor.p1_meter_power
-    above: 6500
-    for: { minutes: 5 }
-    id: "pause_load_high"
+    above: 6000
+    for: { seconds: 30 }
+    id: "high_load"
+  # A quiet period confirms that the other substantial appliance has finished.
+  - trigger: numeric_state
+    entity_id: sensor.p1_meter_power
+    below: 500
+    for: { minutes: 2 }
+    id: "quiet_house"
+  # Filter small instantaneous load noise from prematurely wiping out the quiet state.
+  - trigger: numeric_state
+    entity_id: sensor.p1_meter_power
+    above: 800
+    for: { seconds: 15 }
+    id: "house_no_longer_quiet"
+  # Trigger check at start of dinner window.
   - trigger: time
     at: "18:15:00"
-    id: "pause_lockout_start"
-  - trigger: numeric_state
-    entity_id: sensor.p1_meter_power
-    below: 4000
-    for: { minutes: 10 }
-    id: "resume_load_low"
+    id: "dinner_check"
+  # Trigger check if EV starts charging mid-dinner.
+  - trigger: state
+    entity_id: sensor.ohme_home_pro_delta_11kw_status
+    to: "charging"
+    id: "dinner_check"
+  # Trigger at end of dinner window.
   - trigger: time
     at: "20:00:00"
-    id: "resume_lockout_end"
-  - trigger: time
-    at: "22:30:00"
-    id: "resume_safety_net"
+    id: "dinner_end"
+  # Re-check the two helper states while a Guardian pause is in progress.
+  - trigger: time_pattern
+    seconds: "/30"
+    id: "resume_check"
 
 conditions: []
 
 actions:
   - choose:
+      # 1. High house load collision: pause EV and start yielding period.
       - conditions:
-          - condition: or
-            conditions:
-              - condition: trigger
-                id: "pause_load_high"
-              - condition: trigger
-                id: "pause_lockout_start"
+          - condition: trigger
+            id: "high_load"
+          - condition: state
+            entity_id: sensor.ohme_home_pro_delta_11kw_status
+            state: "charging"
         sequence:
-          - variables:
-              reason: "{{ 'High House Load' if trigger.id == 'pause_load_high' else 'Dinner Lockout' }}"
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: "{{ ohme_state == 'charging' }}"
-                sequence:
-                  - action: select.select_option
-                    target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
-                    data: { option: paused }
-                  - action: script.notify_both_phones
-                    data:
-                      title: "EV Paused"
-                      message: "[{{ now().strftime('%H:%M') }}] Paused. Reason: {{ reason }}. Protecting your 6kW peak."
-            default:
-              - condition: template
-                value_template: "{{ trigger.id == 'pause_load_high' }}"
-              - action: script.notify_both_phones
-                data:
-                  title: "High Load — Not the EV"
-                  message: "[{{ now().strftime('%H:%M') }}] House load crossed 6.5kW with the EV not charging (status: {{ ohme_state }}). Worth checking what's running."
+          - action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: paused }
+          - action: input_boolean.turn_on
+            target: { entity_id: input_boolean.ev_guardian_yielding }
+          - action: input_boolean.turn_off
+            target: { entity_id: input_boolean.ev_guardian_quiet }
+          - action: script.notify_both_phones
+            data:
+              title: "EV Paused"
+              message: >
+                [{{ now().strftime('%H:%M') }}] House load stayed above 6.0kW
+                for 30 seconds. EV paused to yield to the house.
 
+      # 2. High load notification: house import > 6.0kW while EV is NOT charging.
       - conditions:
-          - condition: or
-            conditions:
-              - condition: trigger
-                id: "resume_load_low"
-              - condition: trigger
-                id: "resume_lockout_end"
-              - condition: trigger
-                id: "resume_safety_net"
+          - condition: trigger
+            id: "high_load"
+        sequence:
+          - action: script.notify_both_phones
+            data:
+              title: "High Load — Not the EV"
+              message: >
+                [{{ now().strftime('%H:%M') }}] House load stayed above 6.0kW
+                for 30 seconds while the EV was not charging (status:
+                {{ ohme_state }}).
+
+      # 3. Dinner lockout: pause EV if charging during 18:15 - 20:00.
+      - conditions:
+          - condition: trigger
+            id: "dinner_check"
+          - condition: time
+            after: "18:15:00"
+            before: "20:00:00"
+          - condition: state
+            entity_id: sensor.ohme_home_pro_delta_11kw_status
+            state: "charging"
+        sequence:
+          - action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: paused }
+          # we might remove this notification in due course
+          - action: script.notify_both_phones
+            data:
+              title: "EV Paused"
+              message: "[{{ now().strftime('%H:%M') }}] Paused for the dinner window."
+
+      # 4. House quiet confirmation: set quiet helper after 2 mins under 500W while yielding.
+      - conditions:
+          - condition: trigger
+            id: "quiet_house"
+          - condition: state
+            entity_id: input_boolean.ev_guardian_yielding
+            state: "on"
+        sequence:
+          - action: input_boolean.turn_on
+            target: { entity_id: input_boolean.ev_guardian_quiet }
+
+      # 5. House load rise: reset quiet helper if load exceeds 800W for 15 seconds.
+      - conditions:
+          - condition: trigger
+            id: "house_no_longer_quiet"
+        sequence:
+          - action: input_boolean.turn_off
+            target: { entity_id: input_boolean.ev_guardian_quiet }
+
+      # 6. Dinner window end: resume EV at 20:00 if paused solely for dinner (not yielding).
+      - conditions:
+          - condition: trigger
+            id: "dinner_end"
+          - condition: state
+            entity_id: input_boolean.ev_guardian_yielding
+            state: "off"
+          - condition: state
+            entity_id: sensor.ohme_home_pro_delta_11kw_status
+            state: "paused"
+        sequence:
+          - action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: smart_charge }
+
+      # 7. Collision recovery: outside dinner window, resume after 10m yielding + 2m quiet.
+      - conditions:
+          - condition: trigger
+            id: "resume_check"
+          - condition: state
+            entity_id: input_boolean.ev_guardian_yielding
+            state: "on"
+          - condition: state
+            entity_id: input_boolean.ev_guardian_quiet
+            state: "on"
           - condition: time
             after: "20:00:00"
             before: "18:15:00"
+          - condition: template
+            value_template: >
+              {{ (as_timestamp(now()) -
+                  as_timestamp(states.input_boolean.ev_guardian_yielding.last_changed))
+                  >= 600 }}
+          - condition: state
+            entity_id: sensor.ohme_home_pro_delta_11kw_status
+            state: "paused"
         sequence:
-          - choose:
-              - conditions:
-                  - condition: template
-                    value_template: "{{ ohme_state in ['unplugged', 'finished', 'pending_approval'] }}"
-                sequence: []
-            default:
-              - action: select.select_option
-                target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
-                data: { option: smart_charge }
+          - action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: smart_charge }
+          - action: input_boolean.turn_off
+            target:
+              entity_id:
+                - input_boolean.ev_guardian_yielding
+                - input_boolean.ev_guardian_quiet
+          - action: script.notify_both_phones
+            data:
+              title: "EV Resumed"
+              message: >
+                [{{ now().strftime('%H:%M') }}] House has been quiet and the
+                Guardian minimum pause has elapsed.
 
 mode: single

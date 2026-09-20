@@ -2,5 +2,7 @@
 .env
 .vscode
 
+ignore
+
 automations.yaml
 scripts.yaml

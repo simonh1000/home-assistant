@@ -1,0 +1,89 @@
+alias: "EV: Capacity Guardian"
+description: >
+  Protects the 6kW monthly capacity peak and handles the dinner lockout.
+  Approval handling lives in a separate automation (EV: Approval Notifier).
+  Uses sensor.p1_meter_power (Watts) — sensor.p1_meter_active_power does
+  NOT exist; do not reintroduce it.
+
+variables:
+  ohme_state: "{{ states('sensor.ohme_home_pro_delta_11kw_status') }}"
+
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.p1_meter_power
+    above: 6500
+    for: { minutes: 5 }
+    id: "pause_load_high"
+  - trigger: time
+    at: "18:15:00"
+    id: "pause_lockout_start"
+  - trigger: numeric_state
+    entity_id: sensor.p1_meter_power
+    below: 4000
+    for: { minutes: 10 }
+    id: "resume_load_low"
+  - trigger: time
+    at: "20:00:00"
+    id: "resume_lockout_end"
+  - trigger: time
+    at: "22:30:00"
+    id: "resume_safety_net"
+
+conditions: []
+
+actions:
+  - choose:
+      - conditions:
+          - condition: or
+            conditions:
+              - condition: trigger
+                id: "pause_load_high"
+              - condition: trigger
+                id: "pause_lockout_start"
+        sequence:
+          - variables:
+              reason: "{{ 'High House Load' if trigger.id == 'pause_load_high' else 'Dinner Lockout' }}"
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ ohme_state == 'charging' }}"
+                sequence:
+                  - action: select.select_option
+                    target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+                    data: { option: paused }
+                  - action: script.notify_both_phones
+                    data:
+                      title: "EV Paused"
+                      message: "[{{ now().strftime('%H:%M') }}] Paused. Reason: {{ reason }}. Protecting your 6kW peak."
+            default:
+              - condition: template
+                value_template: "{{ trigger.id == 'pause_load_high' }}"
+              - action: script.notify_both_phones
+                data:
+                  title: "High Load — Not the EV"
+                  message: "[{{ now().strftime('%H:%M') }}] House load crossed 6.5kW with the EV not charging (status: {{ ohme_state }}). Worth checking what's running."
+
+      - conditions:
+          - condition: or
+            conditions:
+              - condition: trigger
+                id: "resume_load_low"
+              - condition: trigger
+                id: "resume_lockout_end"
+              - condition: trigger
+                id: "resume_safety_net"
+          - condition: time
+            after: "20:00:00"
+            before: "18:15:00"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ ohme_state in ['unplugged', 'finished', 'pending_approval'] }}"
+                sequence: []
+            default:
+              - action: select.select_option
+                target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+                data: { option: smart_charge }
+
+mode: single
