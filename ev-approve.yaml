@@ -13,7 +13,9 @@ actions:
   - action: button.press
     target:
       entity_id: button.ohme_home_pro_delta_11kw_approve_charge
-  - action: script.notify_both_phones
+  - action: notify.send_message
+    target:
+      device_id: "{{ trigger.event.data.device_id }}"
     data:
       title: "EV Charge Approved"
       message: "[{{ now().strftime('%H:%M') }}] Approved via notification."

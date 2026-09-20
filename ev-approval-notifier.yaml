@@ -1,31 +1,26 @@
-alias: "EV: Approval Notifier"
+alias: "EV: Approval Reminder (22:30)"
 description: >
-  Alerts immediately when a charge needs approval (actionable notification,
-  never auto-approved — this is a deliberate security gate), plus a 22:30
-  reminder if it's still sitting unapproved.
+  Sends a 22:30 safety-net reminder if an EV charge is still sitting
+  unapproved (in case the Ohme app notification was missed during the day).
 
 variables:
   ohme_vehicle: "{{ states('select.ohme_home_pro_delta_11kw_vehicle') }}"
 
 triggers:
-  - trigger: state
-    entity_id: sensor.ohme_home_pro_delta_11kw_status
-    to: "pending_approval"
-    id: "immediate"
   - trigger: time
     at: "22:30:00"
-    id: "reminder"
 
 conditions:
-  - condition: template
-    value_template: "{{ trigger.id == 'immediate' or states('sensor.ohme_home_pro_delta_11kw_status') == 'pending_approval' }}"
+  - condition: state
+    entity_id: sensor.ohme_home_pro_delta_11kw_status
+    state: "pending_approval"
 
 actions:
   - action: notify.mobile_app_pixel_10
     data:
-      title: "EV Charge Needs Approval"
+      title: "EV Charge Still Needs Approval"
       message: >
-        [{{ now().strftime('%H:%M') }}] Charge pending for {{ ohme_vehicle }}{{ ' (still waiting)' if trigger.id == 'reminder' else '' }} — check it's expected, then approve.
+        [{{ now().strftime('%H:%M') }}] Charge pending for {{ ohme_vehicle }} is still waiting for approval.
       data:
         priority: high
         ttl: 0
@@ -35,9 +30,9 @@ actions:
             title: "Approve"
   - action: notify.mobile_app_pixel_8
     data:
-      title: "EV Charge Needs Approval"
+      title: "EV Charge Still Needs Approval"
       message: >
-        [{{ now().strftime('%H:%M') }}] Charge pending for {{ ohme_vehicle }}{{ ' (still waiting)' if trigger.id == 'reminder' else '' }} — check it's expected, then approve.
+        [{{ now().strftime('%H:%M') }}] Charge pending for {{ ohme_vehicle }} is still waiting for approval.
       data:
         priority: high
         ttl: 0

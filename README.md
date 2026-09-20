@@ -41,13 +41,13 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ## ⚙️ Configuration & Deployment
 
 ### File Structure
-*   **Automations:** Files named `*.yaml` are combined into `automations.yaml`.
-*   **Scripts:** Files named `*.script.yaml` are combined into `scripts.yaml`.
+*   **Automations:** Files named `*.yaml` are combined into `dist/automations.yaml`.
+*   **Scripts:** Files named `*.script.yaml` are combined into `dist/scripts.yaml`.
 *   **Web Assets:** Local images or files for the UI should be placed in `/config/www/`.
 
 ### 🚀 How to Update & Upload
-1.  **Consolidate:** Run `./combine.py` in this folder.
-2.  **Upload:** Run `./combine.py --deploy` (requires `.env` setup). This will upload both `automations.yaml` and `scripts.yaml`.
+1.  **Consolidate:** Run `./combine.py` in this folder to generate output in `dist/`.
+2.  **Upload:** Run `./combine.py --deploy` (requires `.env` setup). This will upload both `dist/automations.yaml` and `dist/scripts.yaml`.
 3.  **Reload:** Go to HA -> **Settings -> Tools -> YAML** -> click **Automations** and **Scripts**.
 
 ---
