@@ -39,6 +39,10 @@ To make the "Tuesday Night Override" work, you must create **one** Helper in Hom
 2.  **Upload:** Drag `automations.yaml` to your HA Green `/config/` folder.
 3.  **Reload:** Go to HA -> **Settings -> Tools -> YAML** -> click **Automations**.
 
+```sh
+./combine.sh --deploy
+```
+
 ---
 
 ## ☀️ Tomorrow's Checklist
