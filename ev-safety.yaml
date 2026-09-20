@@ -1,0 +1,39 @@
+alias: "EV: Safety Net (Auto-Pause)"
+description: >
+  CIRCUIT BREAKER: If total house power > 9kW for 8 minutes, this automatically 
+  PAUSES the charger to protect the 15-minute capacity peak. 
+  
+  This is the primary defense if you are asleep or away.
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.p1_meter_active_power
+    above: 9
+    for:
+      minutes: 8
+conditions:
+  - condition: state
+    entity_id: sensor.ohme_home_pro_delta_11kw_status
+    state: "charging"
+actions:
+  - action: select.select_option
+    target:
+      entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+    data:
+      option: paused
+  - action: notify.mobile_app_pixel_10
+    data:
+      title: "EV EMERGENCY PAUSE"
+      message: "House power exceeded 9kW for 8 mins. The EV charger has been PAUSED automatically to save your capacity peak."
+      data:
+        priority: high
+        ttl: 0
+        importance: high
+  - action: notify.mobile_app_pixel_8
+    data:
+      title: "EV EMERGENCY PAUSE"
+      message: "House power exceeded 9kW for 8 mins. The EV charger has been PAUSED automatically to save your capacity peak."
+      data:
+        priority: high
+        ttl: 0
+        importance: high
+mode: single
