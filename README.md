@@ -29,12 +29,18 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ### 4. [peak-alert.yaml](peak-alert.yaml)
 *   **Awareness Only:** Sends a warning at **6.0 kW** (sustained for 2 mins). It does not take action; it just keeps you informed.
 
+### 5. [ev-charge-completed.yaml](ev-charge-completed.yaml)
+*   **Charge Completion:** Sends a notification to both phones when the Ohme charger finishes charging outside of Guardian pauses.
+
 ---
 
 ## 📜 Helper Scripts
 
 ### [notify_both_phones.script.yaml](notify_both_phones.script.yaml)
-*   A centralized script used by other automations to ensure critical alerts reach both the Pixel 10 and Pixel 8 simultaneously.
+*   A centralized script used by other automations to send alerts to both Pixel 10 and Pixel 8 simultaneously.
+
+### [notify_simon.script.yaml](notify_simon.script.yaml) & [notify_liesbeth.script.yaml](notify_liesbeth.script.yaml)
+*   Targeted notification scripts for Pixel 10 (Simon) and Pixel 8 (Liesbeth) individually.
 
 ---
 
@@ -53,4 +59,9 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ---
 
 ## 📝 TODO
+*   [ ] Add `/src` directory
 *   [ ] **Automate Reload**: Add support for Home Assistant API to automatically trigger `automation.reload` and `script.reload` after deployment. Requires a Long-Lived Access Token stored as `HA_TOKEN` in `.env`.
+*   [x] **Notification when charging complete**
+*   [ ] **Button to say 'cooking over'**
+*   [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
+*   [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?

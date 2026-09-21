@@ -1,0 +1,21 @@
+alias: "EV: Charge Complete Notifier"
+description: >
+  Notifies when the Ohme reports the charge session itself finished
+  (status -> finished) — i.e. the car stopped charging on its own,
+  not because the Guardian paused it. No SoC data available, so this
+  is a "something happened" signal rather than a "X% reached" one.
+
+triggers:
+  - trigger: state
+    entity_id: sensor.ohme_home_pro_delta_11kw_status
+    to: "finished"
+
+conditions: []
+
+actions:
+  - action: script.notify_both_phones
+    data:
+      title: "EV Charging Complete"
+      message: "[{{ now().strftime('%H:%M') }}] Charging session finished on its own."
+
+mode: single

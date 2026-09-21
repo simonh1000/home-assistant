@@ -1,16 +1,13 @@
-alias: "Notify Both Phones"
+alias: "Notify Simon"
 fields:
   title:
     example: "EV Paused"
   message:
     example: "Something happened"
 sequence:
-  - action: script.notify_simon
+  - action: notify.mobile_app_pixel_10
     data:
       title: "{{ title }}"
       message: "{{ message }}"
-  - action: script.notify_liesbeth
-    data:
-      title: "{{ title }}"
-      message: "{{ message }}"
+      data: { priority: high, ttl: 0, importance: high }
 mode: parallel

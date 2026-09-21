@@ -119,6 +119,11 @@ actions:
         sequence:
           - action: input_boolean.turn_on
             target: { entity_id: input_boolean.ev_guardian_quiet }
+          - action: script.notify_simon
+            data:
+              title: "House Quiet"
+              message: >
+                [{{ now().strftime('%H:%M') }}] House draw dropped below 500W for 2 minutes while yielding.
 
       # 5. House load rise: reset quiet helper if load exceeds 800W for 15 seconds.
       - conditions:
