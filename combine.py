@@ -158,7 +158,7 @@ def print_reload_reminder():
     """Print a prominent reminder to reload YAML in Home Assistant."""
     print("\n" + "="*60)
     print("REMINDER: You must RELOAD your YAML in Home Assistant:")
-    print("Settings -> Developer Tools -> YAML -> AUTOMATIONS & SCRIPTS")
+    print("Settings -> Tools -> YAML -> AUTOMATIONS & SCRIPTS")
     print("="*60 + "\n")
 
 if __name__ == "__main__":
