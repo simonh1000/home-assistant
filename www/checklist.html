@@ -359,85 +359,6 @@
         ></textarea>
       </div>
 
-      <div class="item" data-id="main-fuse">
-        <div class="item-row">
-          <div>
-            <div class="q-nl">
-              Wat is de effectieve hoofdzekering?
-              <span
-                style="font-weight: 400; font-size: 12px; color: var(--muted)"
-                >(verwacht 3×40A, al bevestigd via schema + keuringsverslag —
-                kort bevestigen)</span
-              >
-            </div>
-            <div class="q-en">
-              What is the actual main fuse rating?
-              <span style="font-style: italic; font-size: 12px"
-                >(expected 3×40A, already confirmed via the diagram + inspection
-                report — quick confirm)</span
-              >
-            </div>
-          </div>
-        </div>
-        <div class="subrow">
-          <div class="choice-group">
-            <label class="choice"
-              ><input
-                type="radio"
-                name="main-fuse-choice"
-                value="3x25A"
-                onchange="saveChoice(this)"
-              /><span>3×25A</span></label
-            >
-            <label class="choice"
-              ><input
-                type="radio"
-                name="main-fuse-choice"
-                value="3x32A"
-                onchange="saveChoice(this)"
-              /><span>3×32A</span></label
-            >
-            <label class="choice"
-              ><input
-                type="radio"
-                name="main-fuse-choice"
-                value="3x40A"
-                onchange="saveChoice(this)"
-              /><span>3×40A</span></label
-            >
-            <label class="choice"
-              ><input
-                type="radio"
-                name="main-fuse-choice"
-                value="3x50A"
-                onchange="saveChoice(this)"
-              /><span>3×50A</span></label
-            >
-            <label class="choice"
-              ><input
-                type="radio"
-                name="main-fuse-choice"
-                value="3x63A"
-                onchange="saveChoice(this)"
-              /><span>3×63A</span></label
-            >
-            <label class="choice"
-              ><input
-                type="radio"
-                name="main-fuse-choice"
-                value="anders"
-                onchange="saveChoice(this)"
-              /><span>Anders — Other</span></label
-            >
-          </div>
-        </div>
-        <textarea
-          class="notes"
-          placeholder="Indien 'Anders': waarde hier — If 'Other': value here"
-          oninput="saveNote(this)"
-        ></textarea>
-      </div>
-
       <div class="item" data-id="free-space">
         <div class="item-row">
           <div>
@@ -493,6 +414,7 @@
           oninput="saveNote(this)"
         ></textarea>
       </div>
+
     </section>
 
     <section>
@@ -712,20 +634,16 @@
           unit</span
         >
         De omvormer en de batterij bestaan in aparte 1-fasige en 3-fasige
-        hardware-uitvoeringen — niet gewoon dezelfde doos anders bekabeld. Het
-        typeplaatje op de omvormer geeft het definitieve antwoord: een modelcode
-        die begint met <b>HD-P3-</b> is 3-fasig (verwacht: <b>HD-P3-5K0-S1</b>);
-        een code die begint met <b>HD-P1-</b> is 1-fasig — verkeerd toestel.
-        Extra controle: de AC-kabel naar de omvormer moet 5 aders hebben (3
-        fasen + nul + aarde) i.p.v. 3.<br />
+        hardware-uitvoeringen — niet gewoon dezelfde doos anders bekabeld.
+        Verwacht typeplaatje: <b>HD-P3-6K0-S1</b> (bevestigd via getekende
+        offerte). Extra controle indien twijfel: de AC-kabel naar de omvormer
+        moet 5 aders hebben (3 fasen + nul + aarde) i.p.v. 3.<br />
         <span class="en"
-          >The inverter and battery exist as genuinely separate single-phase and
-          three-phase hardware — not the same box wired differently. The
-          nameplate on the inverter is the definitive check: a model code
-          starting with <b>HD-P3-</b> is three-phase (expected:
-          <b>HD-P3-5K0-S1</b>); a code starting with <b>HD-P1-</b> is
-          single-phase — wrong unit. Extra check: the AC cable into the inverter
-          should have 5 cores (3 phases + neutral + earth), not 3.</span
+          >The inverter and battery exist as genuinely separate single-phase
+          and three-phase hardware. Expected nameplate: <b>HD-P3-6K0-S1</b>
+          (confirmed via signed quote). Extra check if in doubt: the AC cable
+          into the inverter should have 5 cores (3 phases + neutral + earth),
+          not 3.</span
         >
       </div>
 
@@ -735,10 +653,19 @@
             <div class="q-nl">
               EcoFlow: verwacht de driefasige meter/CT-klemmen (bevestigd door
               verkoper op 21 aug) — bevestigen dat dit geplaatst wordt.
+              <span
+                style="font-weight: 400; font-size: 12px; color: var(--muted)"
+                >(Let op: de offerte vermeldt zelf een "1-fase CT" — dit is de
+                echte openstaande vraag, niet het omvormermodel.)</span
+              >
             </div>
             <div class="q-en">
               EcoFlow: expecting the three-phase meter/CT clamps (confirmed by
               sales rep 21 Aug) — confirm that's what's fitted.
+              <span style="font-style: italic; font-size: 12px"
+                >(Note: the quote itself lists a "1-phase CT" — this is the
+                real open question, not the inverter model.)</span
+              >
             </div>
           </div>
         </div>
@@ -770,40 +697,9 @@
             >
           </div>
         </div>
-        <div class="subrow">
-          <div class="subrow-label">
-            Typeplaatje omvormer <span class="en">— Inverter nameplate</span>
-          </div>
-          <div class="choice-group">
-            <label class="choice"
-              ><input
-                type="radio"
-                name="ecoflow-nameplate-choice"
-                value="hd-p3"
-                onchange="saveChoice(this)"
-              /><span>HD-P3-… (3-fasig — three-phase)</span></label
-            >
-            <label class="choice"
-              ><input
-                type="radio"
-                name="ecoflow-nameplate-choice"
-                value="hd-p1"
-                onchange="saveChoice(this)"
-              /><span>HD-P1-… (1-fasig — single-phase)</span></label
-            >
-            <label class="choice"
-              ><input
-                type="radio"
-                name="ecoflow-nameplate-choice"
-                value="niet-gecontroleerd"
-                onchange="saveChoice(this)"
-              /><span>Nog niet gecontroleerd — Not yet checked</span></label
-            >
-          </div>
-        </div>
         <textarea
           class="notes"
-          placeholder="Volledige modelcode hier noteren (foto ook handig)… — Note the full model code here (a photo helps too)…"
+          placeholder="Notitie… — Note…"
           oninput="saveNote(this)"
         ></textarea>
       </div>
@@ -910,6 +806,206 @@
         <textarea
           class="notes"
           placeholder="Extra notitie (optioneel)… — Extra note (optional)…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="export-cap">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Is er een exportlimiet (terugleverlimiet) ingesteld op de
+              omvormer? Komt dit overeen met wat we verwachten gegeven de
+              paneelcapaciteit (5,7 kWp)?
+            </div>
+            <div class="q-en">
+              Is there a configured grid export/feed-in limit on the inverter?
+              Does it match what we'd expect given the panel capacity (5.7
+              kWp)?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="export-cap-choice"
+                value="bevestigd"
+                onchange="saveChoice(this)"
+              /><span>Bevestigd, klopt — Confirmed, matches</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="export-cap-choice"
+                value="onverwacht"
+                onchange="saveChoice(this)"
+              /><span>Onverwachte limiet — Unexpected limit</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="export-cap-choice"
+                value="weet-niet"
+                onchange="saveChoice(this)"
+              /><span>Weet niet / navragen — Unsure / follow up</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Waarde, details… — Value, details…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="backup-circuits">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Welke circuits blijven gevoed door de S1-batterij bij een
+              stroomstoring (backup)? Niet het hele huis, vermoedelijk — welke
+              wel?
+            </div>
+            <div class="q-en">
+              Which circuits stay powered by the S1 battery during a grid
+              outage (backup)? Presumably not the whole house — which ones
+              are?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="backup-circuits-choice"
+                value="bevestigd"
+                onchange="saveChoice(this)"
+              /><span>Lijst ontvangen — List received</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="backup-circuits-choice"
+                value="geen-backup"
+                onchange="saveChoice(this)"
+              /><span>Geen backup-functie — No backup function</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="backup-circuits-choice"
+                value="weet-niet"
+                onchange="saveChoice(this)"
+              /><span>Weet niet / navragen — Unsure / follow up</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Welke circuits, details… — Which circuits, details…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="battery-expandability">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Is er fysieke/elektrische ruimte om later een tweede S1-module
+              toe te voegen, zonder de installatie te moeten herdoen? (relevant
+              gezien we bewust overdimensioneren met het oog op wederverkoop)
+            </div>
+            <div class="q-en">
+              Is there physical/electrical headroom to add a second S1 module
+              later, without redoing the install? (relevant given we're
+              deliberately over-building with resale value in mind)
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="battery-expand-choice"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja, bevestigd — Yes, confirmed</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="battery-expand-choice"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Nee / beperkt — No / limited</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="battery-expand-choice"
+                value="weet-niet"
+                onchange="saveChoice(this)"
+              /><span>Weet niet / navragen — Unsure / follow up</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Details, beperkingen… — Details, limitations…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="warranty-terms">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              Garantietermijnen genoteerd? Productgarantie (EcoFlow) en
+              installatiegarantie (Dural) zijn normaal apart — beide
+              termijnen apart vastleggen.
+            </div>
+            <div class="q-en">
+              Warranty terms on file? Product warranty (EcoFlow) and
+              installation warranty (Dural) are normally separate — record
+              both durations separately.
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="warranty-choice"
+                value="beide"
+                onchange="saveChoice(this)"
+              /><span>Beide genoteerd — Both on file</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="warranty-choice"
+                value="1van2"
+                onchange="saveChoice(this)"
+              /><span>Slechts 1 van 2 — Only 1 of 2</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="warranty-choice"
+                value="geen"
+                onchange="saveChoice(this)"
+              /><span>Nog geen — Neither yet</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="EcoFlow: … jaar. Dural: … jaar. — EcoFlow: … years. Dural: … years."
           oninput="saveNote(this)"
         ></textarea>
       </div>
