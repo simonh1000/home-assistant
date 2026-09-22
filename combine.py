@@ -10,6 +10,10 @@ from pathlib import Path
 DIST_DIR = Path("dist")
 AUTOMATIONS_FILE = DIST_DIR / "automations.yaml"
 SCRIPTS_FILE = DIST_DIR / "scripts.yaml"
+HELPERS_FILE = DIST_DIR / "helpers.yaml"
+HELPERS_SOURCE = Path("config/helpers.yaml")
+CONFIG_FILE = DIST_DIR / "configuration.yaml"
+CONFIG_SOURCE = Path("config/configuration.yaml")
 SMB_TARGET = "//192.168.0.183/config"
 SMB_HOST = "192.168.0.183"
 
@@ -104,6 +108,18 @@ def combine():
     a_success = write_combined_file(AUTOMATIONS_FILE, automations, is_script=False)
     s_success = write_combined_file(SCRIPTS_FILE, scripts, is_script=True)
     
+    # Copy helpers.yaml to dist
+    if HELPERS_SOURCE.exists():
+        print(f"Copying {HELPERS_SOURCE} to {HELPERS_FILE}...")
+        import shutil
+        shutil.copy2(HELPERS_SOURCE, HELPERS_FILE)
+    
+    # Copy configuration.yaml to dist
+    if CONFIG_SOURCE.exists():
+        print(f"Copying {CONFIG_SOURCE} to {CONFIG_FILE}...")
+        import shutil
+        shutil.copy2(CONFIG_SOURCE, CONFIG_FILE)
+    
     return a_success or s_success
 
 def deploy(files_to_deploy):
@@ -166,6 +182,6 @@ if __name__ == "__main__":
     
     if combine():
         if should_deploy:
-            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE])
+            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE])
         
         print_reload_reminder()
