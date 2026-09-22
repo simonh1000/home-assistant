@@ -57,17 +57,6 @@ def save_version(version):
     """Write the new version to the VERSION file."""
     VERSION_FILE.write_text(f"{version}\n")
 
-def bump_version(version_str):
-    """Increment the patch number (1.0.1 -> 1.0.2)."""
-    try:
-        parts = version_str.split('.')
-        if len(parts) == 3:
-            parts[2] = str(int(parts[2]) + 1)
-            return '.'.join(parts)
-        return version_str + ".1"
-    except (ValueError, IndexError):
-        return "1.0.0"
-
 def get_yaml_files():
     """Find all .yaml files in src/automations and src/scripts."""
     automations_dir = Path("src/automations")
@@ -300,18 +289,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     current_v = get_current_version()
-    target_v = args.version_tag
+    target_v = args.version_tag or current_v
 
-    if args.deploy and not target_v:
-        target_v = bump_version(current_v)
-        print(f"No version provided. Auto-bumping: {current_v} -> {target_v}")
+    if args.version_tag:
+        print(f"Updating VERSION file to: {target_v}")
         save_version(target_v)
-    elif target_v:
-        print(f"Using manual version: {target_v}")
-        save_version(target_v)
-    else:
-        target_v = current_v
-        print(f"Current version: {target_v}")
+    
+    print(f"Using version: {target_v}")
     
     if combine(version_tag=target_v):
         if args.deploy:
