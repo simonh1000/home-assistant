@@ -15,6 +15,8 @@ HELPERS_FILE = DIST_DIR / "helpers.yaml"
 HELPERS_SOURCE = Path("config/helpers.yaml")
 CONFIG_FILE = DIST_DIR / "configuration.yaml"
 CONFIG_SOURCE = Path("config/configuration.yaml")
+DASHBOARD_FILE = DIST_DIR / "ui-lovelace.yaml"
+DASHBOARD_SOURCE = Path("config/ui-lovelace.yaml")
 SMB_TARGET = "//192.168.0.183/config"
 SMB_HOST = "192.168.0.183"
 
@@ -137,6 +139,12 @@ def combine(version_tag=None):
         print(f"Copying {CONFIG_SOURCE} to {CONFIG_FILE}...")
         import shutil
         shutil.copy2(CONFIG_SOURCE, CONFIG_FILE)
+    
+    # Copy ui-lovelace.yaml to dist
+    if DASHBOARD_SOURCE.exists():
+        print(f"Copying {DASHBOARD_SOURCE} to {DASHBOARD_FILE}...")
+        import shutil
+        shutil.copy2(DASHBOARD_SOURCE, DASHBOARD_FILE)
     
     return a_success or s_success
 
@@ -273,7 +281,7 @@ if __name__ == "__main__":
     
     if combine(version_tag=args.version_tag):
         if args.deploy:
-            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE])
+            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE, DASHBOARD_FILE])
             reload_ha_yaml()
             update_ha_version_state(args.version_tag)
         
