@@ -54,7 +54,9 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ### 🚀 How to Update & Upload
 
 1.  **Consolidate:** Run `./combine.py` in this folder to generate output in `dist/`.
-2.  **Upload:** Run `./combine.py --deploy` (requires `.env` setup). This will upload both `dist/automations.yaml` and `dist/scripts.yaml`.
+2.  **Upload:** Run `./combine.py --deploy --version-tag 1.2.3` (requires `.env` setup). 
+    - *Note:* The `--version-tag` (or `-v`) is **required** when deploying.
+    - This will upload `dist/automations.yaml`, `dist/scripts.yaml`, `dist/helpers.yaml`, and `dist/configuration.yaml`.
 3.  **Reload:** Go to HA -> **Settings -> Tools -> YAML** -> click **Automations** and **Scripts**.
     - *Note:* If `HA_DEPLOY` token is set in `.env`, the script will automatically trigger a reload and update the version state.
 

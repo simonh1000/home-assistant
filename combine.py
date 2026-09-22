@@ -267,6 +267,10 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
+    if args.deploy and not args.version_tag:
+        print("Error: --version-tag (-v) is required when using --deploy.")
+        sys.exit(1)
+    
     if combine(version_tag=args.version_tag):
         if args.deploy:
             deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE])
