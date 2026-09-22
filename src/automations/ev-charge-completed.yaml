@@ -1,3 +1,4 @@
+id: ev_charge_completed
 alias: "EV: Charge Complete Notifier"
 description: >
   Notifies when the Ohme reports the charge session itself finished

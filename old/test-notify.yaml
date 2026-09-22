@@ -1,0 +1,12 @@
+alias: "DEBUG: Notification Test"
+description: "Sends a test notification every 5 minutes."
+triggers:
+  - trigger: time_pattern
+    minutes: "/5"
+actions:
+  - action: script.notify_both_phones
+    data:
+      title: "HA Energy Test"
+      message: "Test notification at {{ now().strftime('%H:%M:%S') }}. Uses new script!"
+      
+mode: single
