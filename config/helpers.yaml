@@ -46,3 +46,11 @@ input_boolean:
   ev_cooking_over:
     name: "EV Guardian: Cooking Over"
     icon: mdi:stove
+
+input_text:
+  config_version:
+    name: "Config Version"
+    icon: mdi:version
+  config_deployed:
+    name: "Config Deployed At"
+    icon: mdi:clock-outline
