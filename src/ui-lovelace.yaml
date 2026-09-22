@@ -1,0 +1,30 @@
+title: EV Guardian Status
+views:
+  - title: Home
+    cards:
+      - type: markdown
+        title: EV Guardian Status
+        content: |-
+          ## EV Guardian State
+          ### Yielding
+
+          **{{ 'Yes 🟢' if is_state('input_boolean.ev_guardian_yielding', 'on') else 'No' }}**
+
+          Set to Yes when the Guardian has paused the EV because house load crossed **6kW** while the car was charging. Stays Yes until the house has been quiet (see below) for the required minimum period, at which point the automation resumes charging and resets this back to No.
+
+
+          ### House Quiet
+
+          **{{ 'Yes 🟢' if is_state('input_boolean.ev_guardian_quiet', 'on') else 'No' }}**
+
+          Set to Yes once load has stayed below 500W for 2 continuous minutes while a Yielding pause is active — confirming whatever caused the collision (cooking, an appliance, etc.) has actually finished, not just dipped briefly. Resets to No if load rises above 800W again, so a false "quiet" doesn't let charging resume into a load that's about to spike back up.
+          
+          ---
+
+          [Check List](/local/checklist.html)
+
+      - type: markdown
+        title: Deployment Info
+        content: >
+          {% set t = as_datetime(states('input_text.config_deployed')) %}
+          {{ states('input_text.config_version') }} ({{ t.strftime('%d-%m-%y') if t else 'unknown' }})
