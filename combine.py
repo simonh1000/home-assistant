@@ -16,6 +16,8 @@ HELPERS_FILE = DIST_DIR / "helpers.yaml"
 HELPERS_SOURCE = Path("src/helpers.yaml")
 CONFIG_FILE = DIST_DIR / "configuration.yaml"
 CONFIG_SOURCE = Path("src/configuration.yaml")
+DASHBOARD_FILE = DIST_DIR / "ui-lovelace.yaml"
+DASHBOARD_SOURCE = Path("src/ui-lovelace.yaml")
 WWW_SOURCE = Path("src/www")
 WWW_DIST = DIST_DIR / "www"
 SMB_TARGET = "//192.168.0.183/config"
@@ -54,17 +56,6 @@ def get_current_version():
 def save_version(version):
     """Write the new version to the VERSION file."""
     VERSION_FILE.write_text(f"{version}\n")
-
-def bump_version(version_str):
-    """Increment the patch number (1.0.1 -> 1.0.2)."""
-    try:
-        parts = version_str.split('.')
-        if len(parts) == 3:
-            parts[2] = str(int(parts[2]) + 1)
-            return '.'.join(parts)
-        return version_str + ".1"
-    except (ValueError, IndexError):
-        return "1.0.0"
 
 def get_yaml_files():
     """Find all .yaml files in src/automations and src/scripts."""
@@ -154,6 +145,12 @@ def combine(version_tag=None):
         import shutil
         shutil.copy2(CONFIG_SOURCE, CONFIG_FILE)
     
+    # Copy ui-lovelace.yaml to dist
+    if DASHBOARD_SOURCE.exists():
+        print(f"Copying {DASHBOARD_SOURCE} to {DASHBOARD_FILE}...")
+        import shutil
+        shutil.copy2(DASHBOARD_SOURCE, DASHBOARD_FILE)
+
     # Copy www directory to dist
     if WWW_SOURCE.exists():
         print(f"Copying {WWW_SOURCE} to {WWW_DIST}...")
@@ -285,22 +282,17 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     current_v = get_current_version()
-    target_v = args.version_tag
+    target_v = args.version_tag or current_v
 
-    if args.deploy and not target_v:
-        target_v = bump_version(current_v)
-        print(f"No version provided. Auto-bumping: {current_v} -> {target_v}")
+    if args.version_tag:
+        print(f"Updating VERSION file to: {target_v}")
         save_version(target_v)
-    elif target_v:
-        print(f"Using manual version: {target_v}")
-        save_version(target_v)
-    else:
-        target_v = current_v
-        print(f"Current version: {target_v}")
+    
+    print(f"Using version: {target_v}")
     
     if combine(version_tag=target_v):
         if args.deploy:
-            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE, WWW_DIST])
+            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE, DASHBOARD_FILE, WWW_DIST])
             reload_ha_yaml()
             update_ha_version_state(target_v)
         

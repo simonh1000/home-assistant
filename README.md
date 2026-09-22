@@ -56,9 +56,9 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 
 1.  **Consolidate:** Run `./combine.py` to generate output in `dist/`.
 2.  **Upload:** Run `./combine.py --deploy` (requires `.env` setup). 
-    - **Versioning:** The script maintains a `VERSION` file in the root. 
-    - If you run with just `--deploy`, it **auto-increments** the patch version (e.g., `1.0.0` → `1.0.1`).
-    - To set a specific version, use `./combine.py --deploy -v 1.2.0`.
+    - **Versioning:** The script uses the `VERSION` file in the root. 
+    - You must **manually** increment the version in the `VERSION` file before merging a PR to `main` (the CI check enforces this).
+    - Alternatively, run `./combine.py --deploy -v 1.2.0` to update the file and deploy in one go.
     - This will upload automations, scripts, helpers, configuration, and web assets.
 3.  **Reload:** Go to HA -> **Settings -> Tools -> YAML** -> click **Automations** and **Scripts**.
     - *Note:* If `HA_DEPLOY` token is set in `.env`, the script will automatically trigger a reload and update the version state.

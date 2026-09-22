@@ -5,6 +5,15 @@ default_config:
 frontend:
   themes: !include_dir_merge_named themes
 
+lovelace:
+  mode: storage
+  dashboards:
+    managed-ev:
+      mode: yaml
+      filename: ui-lovelace.yaml
+      title: Capacity Guardian
+      icon: mdi:car-electric
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
