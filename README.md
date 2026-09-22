@@ -44,7 +44,10 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 
 ## 🏠 Dashboard Widget
 
-To control and monitor the Guardian from your Home Assistant UI, add a **Horizontal Stack** card with the following configuration:
+To control and monitor the Guardian from your Home Assistant UI, you can use a combination of cards.
+
+### 1. Control & Status
+Add a **Horizontal Stack** card:
 
 ```yaml
 type: horizontal-stack
@@ -59,6 +62,26 @@ cards:
     show_state: false
     tap_action:
       action: toggle
+```
+
+### 2. Debugging Markdown
+Add a **Markdown** card to explain the current state:
+
+```yaml
+type: markdown
+content: >
+  ## EV Guardian State
+  ### Current Status
+  
+  **{{ states('input_select.ev_guardian_state') | capitalize }}**
+  
+  - **Idle**: EV charging normally or monitoring for spikes.
+  - **Yielding**: Paused because house load crossed **6.0kW**. Stays here until the house is quiet.
+  - **Cooldown**: Load has been under 500W for 2 minutes. Waiting for the 10-minute total yielding timer to elapse before resuming.
+  
+  ---
+  
+  [Check List](/local/checklist.html)
 ```
 
 ---
