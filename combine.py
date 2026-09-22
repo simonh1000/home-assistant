@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 # --- Configuration ---
+VERSION_FILE = Path("VERSION")
 DIST_DIR = Path("dist")
 AUTOMATIONS_FILE = DIST_DIR / "automations.yaml"
 SCRIPTS_FILE = DIST_DIR / "scripts.yaml"
@@ -43,6 +44,27 @@ def load_env():
                 # Append to previous key (handles multi-line tokens)
                 config[current_key] += line
     return config
+
+def get_current_version():
+    """Read the version from the VERSION file."""
+    if not VERSION_FILE.exists():
+        return "0.0.1"
+    return VERSION_FILE.read_text().strip()
+
+def save_version(version):
+    """Write the new version to the VERSION file."""
+    VERSION_FILE.write_text(f"{version}\n")
+
+def bump_version(version_str):
+    """Increment the patch number (1.0.1 -> 1.0.2)."""
+    try:
+        parts = version_str.split('.')
+        if len(parts) == 3:
+            parts[2] = str(int(parts[2]) + 1)
+            return '.'.join(parts)
+        return version_str + ".1"
+    except (ValueError, IndexError):
+        return "1.0.0"
 
 def get_yaml_files():
     """Find all .yaml files in src/automations and src/scripts."""
@@ -258,17 +280,27 @@ def update_ha_version_state(version_tag):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Combine and deploy HA config.")
     parser.add_argument("--deploy", action="store_true", help="Upload to Home Assistant")
-    parser.add_argument("--version-tag", "-v", help="Version number (e.g. 1.0.1)")
+    parser.add_argument("--version-tag", "-v", help="Version number (e.g. 1.0.1). If omitted during deploy, it auto-bumps.")
     
     args = parser.parse_args()
     
-    if args.deploy and not args.version_tag:
-        print("Error: --version-tag (-v) is required when using --deploy.")
-        sys.exit(1)
+    current_v = get_current_version()
+    target_v = args.version_tag
+
+    if args.deploy and not target_v:
+        target_v = bump_version(current_v)
+        print(f"No version provided. Auto-bumping: {current_v} -> {target_v}")
+        save_version(target_v)
+    elif target_v:
+        print(f"Using manual version: {target_v}")
+        save_version(target_v)
+    else:
+        target_v = current_v
+        print(f"Current version: {target_v}")
     
-    if combine(version_tag=args.version_tag):
+    if combine(version_tag=target_v):
         if args.deploy:
             deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE, WWW_DIST])
             reload_ha_yaml()
-            update_ha_version_state(args.version_tag)
+            update_ha_version_state(target_v)
         
