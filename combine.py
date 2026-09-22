@@ -8,13 +8,16 @@ from datetime import datetime
 from pathlib import Path
 
 # --- Configuration ---
+VERSION_FILE = Path("VERSION")
 DIST_DIR = Path("dist")
 AUTOMATIONS_FILE = DIST_DIR / "automations.yaml"
 SCRIPTS_FILE = DIST_DIR / "scripts.yaml"
 HELPERS_FILE = DIST_DIR / "helpers.yaml"
-HELPERS_SOURCE = Path("config/helpers.yaml")
+HELPERS_SOURCE = Path("src/helpers.yaml")
 CONFIG_FILE = DIST_DIR / "configuration.yaml"
-CONFIG_SOURCE = Path("config/configuration.yaml")
+CONFIG_SOURCE = Path("src/configuration.yaml")
+WWW_SOURCE = Path("src/www")
+WWW_DIST = DIST_DIR / "www"
 SMB_TARGET = "//192.168.0.183/config"
 SMB_HOST = "192.168.0.183"
 
@@ -42,21 +45,34 @@ def load_env():
                 config[current_key] += line
     return config
 
+def get_current_version():
+    """Read the version from the VERSION file."""
+    if not VERSION_FILE.exists():
+        return "0.0.1"
+    return VERSION_FILE.read_text().strip()
+
+def save_version(version):
+    """Write the new version to the VERSION file."""
+    VERSION_FILE.write_text(f"{version}\n")
+
+def bump_version(version_str):
+    """Increment the patch number (1.0.1 -> 1.0.2)."""
+    try:
+        parts = version_str.split('.')
+        if len(parts) == 3:
+            parts[2] = str(int(parts[2]) + 1)
+            return '.'.join(parts)
+        return version_str + ".1"
+    except (ValueError, IndexError):
+        return "1.0.0"
+
 def get_yaml_files():
-    """Find all .yaml files and split them into automations and scripts."""
-    all_files = sorted(Path(".").glob("*.yaml"))
+    """Find all .yaml files in src/automations and src/scripts."""
+    automations_dir = Path("src/automations")
+    scripts_dir = Path("src/scripts")
     
-    automations = []
-    scripts = []
-    
-    for f in all_files:
-        if f.name in ["automations.yaml", "scripts.yaml"]:
-            continue
-        
-        if f.name.endswith(".script.yaml"):
-            scripts.append(f)
-        else:
-            automations.append(f)
+    automations = sorted(automations_dir.glob("*.yaml")) if automations_dir.exists() else []
+    scripts = sorted(scripts_dir.glob("*.yaml")) if scripts_dir.exists() else []
             
     return automations, scripts
 
@@ -138,6 +154,14 @@ def combine(version_tag=None):
         import shutil
         shutil.copy2(CONFIG_SOURCE, CONFIG_FILE)
     
+    # Copy www directory to dist
+    if WWW_SOURCE.exists():
+        print(f"Copying {WWW_SOURCE} to {WWW_DIST}...")
+        import shutil
+        if WWW_DIST.exists():
+            shutil.rmtree(WWW_DIST)
+        shutil.copytree(WWW_SOURCE, WWW_DIST)
+    
     return a_success or s_success
 
 def deploy(files_to_deploy):
@@ -161,7 +185,7 @@ def deploy(files_to_deploy):
         for f in files_to_deploy:
             if f.exists():
                 print(f"Copying {f}...")
-                subprocess.run(["cp", str(f), existing_mount], check=True)
+                subprocess.run(["cp", "-R", str(f), existing_mount], check=True)
         print("Successfully deployed to existing mount.")
         return
 
@@ -178,7 +202,7 @@ def deploy(files_to_deploy):
         for f in files_to_deploy:
             if f.exists():
                 print(f"Copying {f}...")
-                subprocess.run(["cp", str(f), temp_mount], check=True)
+                subprocess.run(["cp", "-R", str(f), temp_mount], check=True)
         
         subprocess.run(["umount", temp_mount], check=True)
         print(f"Successfully deployed to {SMB_TARGET}")
@@ -256,17 +280,27 @@ def update_ha_version_state(version_tag):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Combine and deploy HA config.")
     parser.add_argument("--deploy", action="store_true", help="Upload to Home Assistant")
-    parser.add_argument("--version-tag", "-v", help="Version number (e.g. 1.0.1)")
+    parser.add_argument("--version-tag", "-v", help="Version number (e.g. 1.0.1). If omitted during deploy, it auto-bumps.")
     
     args = parser.parse_args()
     
-    if args.deploy and not args.version_tag:
-        print("Error: --version-tag (-v) is required when using --deploy.")
-        sys.exit(1)
+    current_v = get_current_version()
+    target_v = args.version_tag
+
+    if args.deploy and not target_v:
+        target_v = bump_version(current_v)
+        print(f"No version provided. Auto-bumping: {current_v} -> {target_v}")
+        save_version(target_v)
+    elif target_v:
+        print(f"Using manual version: {target_v}")
+        save_version(target_v)
+    else:
+        target_v = current_v
+        print(f"Current version: {target_v}")
     
-    if combine(version_tag=args.version_tag):
+    if combine(version_tag=target_v):
         if args.deploy:
-            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE])
+            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE, WWW_DIST])
             reload_ha_yaml()
-            update_ha_version_state(args.version_tag)
+            update_ha_version_state(target_v)
         
