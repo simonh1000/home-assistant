@@ -23,14 +23,3 @@ The replay assumes each P1 reading stays in effect until the next sample and
 that the EV was charging for the entire file. For a useful future replay, export
 Ohme status and power alongside P1 history. The replay reports decisions only;
 it does not modify the historical trace after a simulated pause.
-
-## Home Assistant helpers (out of date)
-
-Before enabling `ev-capacity-guardian.yaml`, create these two Toggle helpers in
-Home Assistant's Settings → Devices & services → Helpers:
-
-- `input_boolean.ev_guardian_yielding`
-- `input_boolean.ev_guardian_quiet`
-
-They allow the YAML automation to preserve the Guardian pause and sustained
-quiet states across separate meter triggers.
