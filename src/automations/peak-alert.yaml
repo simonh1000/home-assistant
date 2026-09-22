@@ -1,3 +1,4 @@
+id: peak_alert
 alias: "Peak Alert: Warning Only"
 description: >
   NOTIFICATION ONLY: Sends a warning to your phone if the house load 

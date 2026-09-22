@@ -1,16 +1,17 @@
-alias: "Notify Both Phones"
-fields:
-  title:
-    example: "EV Paused"
-  message:
-    example: "Something happened"
-sequence:
-  - action: script.notify_simon
-    data:
-      title: "{{ title }}"
-      message: "{{ message }}"
-  - action: script.notify_liesbeth
-    data:
-      title: "{{ title }}"
-      message: "{{ message }}"
-mode: parallel
+notify_both_phones:
+  alias: "Notify Both Phones"
+  fields:
+    title:
+      example: "EV Paused"
+    message:
+      example: "Something happened"
+  sequence:
+    - action: script.notify_simon
+      data:
+        title: "{{ title }}"
+        message: "{{ message }}"
+    - action: script.notify_liesbeth
+      data:
+        title: "{{ title }}"
+        message: "{{ message }}"
+  mode: parallel

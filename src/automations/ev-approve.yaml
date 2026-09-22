@@ -1,3 +1,4 @@
+id: ev_approve
 alias: "EV: Approval Button Handler"
 description: Handles the "Approve" button tapped on an EV approval push notification.
 
