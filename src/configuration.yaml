@@ -11,7 +11,7 @@ lovelace:
     managed-ev:
       mode: yaml
       filename: ui-lovelace.yaml
-      title: EV Managed
+      title: Capacity Guardian
       icon: mdi:car-electric
 
 automation: !include automations.yaml
