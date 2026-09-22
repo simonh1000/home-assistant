@@ -1,0 +1,31 @@
+title: EV Guardian Status
+views:
+  - title: Home
+    cards:
+      - type: entities
+        title: Guardian State
+        entities:
+          - entity: input_boolean.ev_guardian_yielding
+            name: Currently Yielding
+          - entity: input_boolean.ev_guardian_quiet
+            name: House is Quiet
+          - entity: sensor.p1_meter_power
+            name: Current Load
+
+      - type: entities
+        title: Deployment Info
+        entities:
+          - entity: input_text.config_version
+            name: Running Version
+          - entity: input_text.config_deployed
+            name: Deployed At
+
+      - type: markdown
+        title: State Explanation
+        content: >
+          **Yielding**: The EV is currently paused because the house load exceeded 6kW.
+          It will stay paused for at least 10 minutes.
+
+
+          **Quiet**: The house load has been under 500W for at least 2 minutes.
+          Both **Quiet** must be ON and 10 minutes must have passed since the start of yielding for the EV to resume.
