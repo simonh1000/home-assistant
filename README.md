@@ -42,6 +42,27 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 
 ---
 
+## 🏠 Dashboard Widget
+
+To control and monitor the Guardian from your Home Assistant UI, add a **Horizontal Stack** card with the following configuration:
+
+```yaml
+type: horizontal-stack
+cards:
+  - type: entity
+    entity: input_select.ev_guardian_state
+    name: Guardian Status
+  - type: button
+    entity: input_boolean.ev_cooking_over
+    name: Cooking Over
+    icon: mdi:stove
+    show_state: false
+    tap_action:
+      action: toggle
+```
+
+---
+
 ## 📜 Helper Scripts
 
 ### [notify_both_phones.script.yaml](notify_both_phones.script.yaml)
