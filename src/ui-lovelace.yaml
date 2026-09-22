@@ -13,25 +13,20 @@ views:
             name: Current Load
 
       - type: markdown
-        title: Guardian State Explanation
-        content: |-
-          ## EV Guardian State
-          ### Yielding
-
-            **{{ 'Yes 🟢' if is_state('input_boolean.ev_guardian_yielding', 'on') else 'No' }}**
-
-            Set to Yes when the Guardian has paused the EV because house load crossed **6kW** while the car was charging. Stays Yes until the house has been quiet (see below) for the required minimum period, at which point the automation resumes charging and resets this back to No.
+        title: State Explanation
+        content: >
+          **Yielding**: The EV is currently paused because the house load exceeded 6kW.
+          It will stay paused for at least 10 minutes.
 
 
-            ### House Quiet
+          **Quiet**: The house load has been under 500W for at least 2 minutes.
+          Both **Quiet** must be ON and 10 minutes must have passed since the start of yielding for the EV to resume.
 
-            **{{ 'Yes 🟢' if is_state('input_boolean.ev_guardian_quiet', 'on') else 'No' }}**
 
-            Set to Yes once load has stayed below 500W for 2 continuous minutes while a Yielding pause is active — confirming whatever caused the collision (cooking, an appliance, etc.) has actually finished, not just dipped briefly. Resets to No if load rises above 800W again, so a false "quiet" doesn't let charging resume into a load that's about to spike back up.
-           
-            ---
+          ---
 
-           [Check List](http://homeassistant.local:8123/local/checklist.html)
+
+          [Check List](/local/checklist.html)
 
       - type: entities
         title: Deployment Info
