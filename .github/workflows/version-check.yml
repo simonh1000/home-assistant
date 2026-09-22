@@ -1,0 +1,39 @@
+name: Version Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'VERSION'
+      - 'src/**'
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version in PR
+        id: pr_version
+        run: echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Get version in main
+        id: main_version
+        run: |
+          git checkout origin/main VERSION
+          echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Compare versions
+        run: |
+          PR_V=${{ steps.pr_version.outputs.version }}
+          MAIN_V=${{ steps.main_version.outputs.version }}
+          echo "PR Version: $PR_V"
+          echo "Main Version: $MAIN_V"
+          if [ "$PR_V" == "$MAIN_V" ]; then
+            echo "Error: Version in VERSION file must be incremented before merging to main."
+            exit 1
+          fi
