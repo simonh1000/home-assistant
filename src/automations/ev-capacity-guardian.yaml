@@ -1,3 +1,4 @@
+id: ev_capacity_guardian
 alias: "EV: Capacity Guardian"
 description: >
   Makes the EV yield to sustained house load and reserves the dinner period.

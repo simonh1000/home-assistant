@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
+import shutil
 import sys
-import yaml
 import subprocess
 import argparse
 from datetime import datetime
@@ -10,8 +10,13 @@ from pathlib import Path
 # --- Configuration ---
 VERSION_FILE = Path("VERSION")
 DIST_DIR = Path("dist")
-AUTOMATIONS_FILE = DIST_DIR / "automations.yaml"
-SCRIPTS_FILE = DIST_DIR / "scripts.yaml"
+# configuration.yaml pulls these in via !include_dir_list / !include_dir_merge_named,
+# which HA resolves relative to the config root — so the "src/..." path has to be
+# preserved all the way to the deployed HA config directory, not flattened.
+AUTOMATIONS_SOURCE = Path("src/automations")
+AUTOMATIONS_DIST = DIST_DIR / "src/automations"
+SCRIPTS_SOURCE = Path("src/scripts")
+SCRIPTS_DIST = DIST_DIR / "src/scripts"
 HELPERS_FILE = DIST_DIR / "helpers.yaml"
 HELPERS_SOURCE = Path("src/helpers.yaml")
 CONFIG_FILE = DIST_DIR / "configuration.yaml"
@@ -57,109 +62,63 @@ def save_version(version):
     """Write the new version to the VERSION file."""
     VERSION_FILE.write_text(f"{version}\n")
 
-def get_yaml_files():
-    """Find all .yaml files in src/automations and src/scripts."""
-    automations_dir = Path("src/automations")
-    scripts_dir = Path("src/scripts")
-    
-    automations = sorted(automations_dir.glob("*.yaml")) if automations_dir.exists() else []
-    scripts = sorted(scripts_dir.glob("*.yaml")) if scripts_dir.exists() else []
-            
-    return automations, scripts
-
-def generate_id(filename):
-    """Create a Home Assistant ID from a filename (e.g. ev-safety.yaml -> ev_safety)."""
-    clean_name = filename.replace(".script.yaml", "").replace(".yaml", "")
-    return clean_name.replace("-", "_")
-
-def str_presenter(dumper, data):
-    """Force YAML to use block scalars (|) for strings with newlines or single quotes to avoid escaping."""
-    if "\n" in data or "'" in data:
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
-
-yaml.add_representer(str, str_presenter)
-
-def write_combined_file(output_path, files, is_script=False, version_tag=None):
-    if not files:
+def copy_tree(source_dir, dist_dir):
+    """Mirror a source directory into dist, replacing whatever was there before."""
+    if not source_dir.exists():
         return False
-
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    header = "# AUTO-GENERATED — DO NOT EDIT MANUALLY.\n"
-    if version_tag:
-        header += f"# Version: {version_tag}\n"
-        header += f"# Deployed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-    header += "# Edit the individual source files instead.\n\n"
-
-    if is_script:
-        master_data = {}
-    else:
-        master_data = []
-
-    for yaml_file in files:
-        print(f"Processing {yaml_file.name}...")
-        try:
-            with open(yaml_file) as f:
-                content = yaml.safe_load(f)
-                file_id = generate_id(yaml_file.name)
-
-                if is_script:
-                    master_data[file_id] = content
-                else:
-                    automation = {"id": file_id}
-                    automation.update(content)
-                    master_data.append(automation)
-
-        except Exception as e:
-            print(f"Error reading {yaml_file.name}: {e}")
-            sys.exit(1)
-
-    with open(output_path, "w") as f:
-        f.write(header)
-        yaml.dump(master_data, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
-
-    print(f"Done! Consolidated file created at {output_path}")
+    if dist_dir.exists():
+        shutil.rmtree(dist_dir)
+    dist_dir.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source_dir, dist_dir)
     return True
 
 def combine(version_tag=None):
-    """Handle the combination of both automations and scripts."""
-    automations, scripts = get_yaml_files()
-    
-    a_success = write_combined_file(AUTOMATIONS_FILE, automations, is_script=False, version_tag=version_tag)
-    s_success = write_combined_file(SCRIPTS_FILE, scripts, is_script=True, version_tag=version_tag)
-    
+    """Stage everything HA needs into dist/, mirroring the src/ layout configuration.yaml expects."""
+    print(f"Copying {AUTOMATIONS_SOURCE} to {AUTOMATIONS_DIST}...")
+    a_success = copy_tree(AUTOMATIONS_SOURCE, AUTOMATIONS_DIST)
+
+    print(f"Copying {SCRIPTS_SOURCE} to {SCRIPTS_DIST}...")
+    s_success = copy_tree(SCRIPTS_SOURCE, SCRIPTS_DIST)
+
     if version_tag:
         with open(DIST_DIR / "version.txt", "w") as f:
             f.write(version_tag)
-    
+
     # Copy helpers.yaml to dist
     if HELPERS_SOURCE.exists():
         print(f"Copying {HELPERS_SOURCE} to {HELPERS_FILE}...")
-        import shutil
         shutil.copy2(HELPERS_SOURCE, HELPERS_FILE)
-    
+
     # Copy configuration.yaml to dist
     if CONFIG_SOURCE.exists():
         print(f"Copying {CONFIG_SOURCE} to {CONFIG_FILE}...")
-        import shutil
         shutil.copy2(CONFIG_SOURCE, CONFIG_FILE)
-    
+
     # Copy ui-lovelace.yaml to dist
     if DASHBOARD_SOURCE.exists():
         print(f"Copying {DASHBOARD_SOURCE} to {DASHBOARD_FILE}...")
-        import shutil
         shutil.copy2(DASHBOARD_SOURCE, DASHBOARD_FILE)
 
     # Copy www directory to dist
     if WWW_SOURCE.exists():
         print(f"Copying {WWW_SOURCE} to {WWW_DIST}...")
-        import shutil
-        if WWW_DIST.exists():
-            shutil.rmtree(WWW_DIST)
-        shutil.copytree(WWW_SOURCE, WWW_DIST)
-    
+        copy_tree(WWW_SOURCE, WWW_DIST)
+
     return a_success or s_success
+
+def deploy_items(files_to_deploy, target_dir):
+    """Copy files as-is; sync directories with --delete so files removed locally
+    (e.g. a deleted automation) don't linger on the HA host."""
+    for f in files_to_deploy:
+        if not f.exists():
+            continue
+        if f.is_dir():
+            print(f"Syncing directory {f} -> {target_dir}/{f.name}...")
+            dest = os.path.join(target_dir, f.name) + "/"
+            subprocess.run(["rsync", "-a", "--delete", f"{f}/", dest], check=True)
+        else:
+            print(f"Copying {f}...")
+            subprocess.run(["cp", str(f), target_dir], check=True)
 
 def deploy(files_to_deploy):
     """Upload the generated files to Home Assistant via SMB."""
@@ -168,7 +127,7 @@ def deploy(files_to_deploy):
     password = env.get("HA_PASSWORD")
 
     print("\nChecking for deployment path...")
-    
+
     # 1. Check for existing macOS mount
     mount_output = subprocess.check_output(["mount"]).decode()
     existing_mount = None
@@ -179,10 +138,7 @@ def deploy(files_to_deploy):
 
     if existing_mount and os.path.exists(existing_mount):
         print(f"Found existing mount at {existing_mount}. Deploying...")
-        for f in files_to_deploy:
-            if f.exists():
-                print(f"Copying {f}...")
-                subprocess.run(["cp", "-R", str(f), existing_mount], check=True)
+        deploy_items(files_to_deploy, existing_mount)
         print("Successfully deployed to existing mount.")
         return
 
@@ -191,16 +147,13 @@ def deploy(files_to_deploy):
     temp_mount = subprocess.check_output(["mktemp", "-d"]).decode().strip()
     try:
         subprocess.run([
-            "mount_smbfs", 
-            f"//{user}:{password}@{SMB_HOST}/config", 
+            "mount_smbfs",
+            f"//{user}:{password}@{SMB_HOST}/config",
             temp_mount
         ], check=True)
-        
-        for f in files_to_deploy:
-            if f.exists():
-                print(f"Copying {f}...")
-                subprocess.run(["cp", "-R", str(f), temp_mount], check=True)
-        
+
+        deploy_items(files_to_deploy, temp_mount)
+
         subprocess.run(["umount", temp_mount], check=True)
         print(f"Successfully deployed to {SMB_TARGET}")
     except subprocess.CalledProcessError as e:
@@ -292,7 +245,7 @@ if __name__ == "__main__":
     
     if combine(version_tag=target_v):
         if args.deploy:
-            deploy([AUTOMATIONS_FILE, SCRIPTS_FILE, HELPERS_FILE, CONFIG_FILE, DASHBOARD_FILE, WWW_DIST])
+            deploy([DIST_DIR / "src", HELPERS_FILE, CONFIG_FILE, DASHBOARD_FILE, WWW_DIST])
             reload_ha_yaml()
             update_ha_version_state(target_v)
         

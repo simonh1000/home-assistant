@@ -1,3 +1,4 @@
+id: ev_approval_notifier
 alias: "EV: Approval Reminder (22:30)"
 description: >
   Sends a 22:30 safety-net reminder if an EV charge is still sitting
