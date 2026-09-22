@@ -88,9 +88,9 @@ The dashboard includes:
 
 ## 📝 TODO
 
-- [ ] Add `/src` directory
+- [x] Add `/src` directory
 - [x] **Automate Reload**: Add support for Home Assistant API to automatically trigger `automation.reload` and `script.reload` after deployment. Requires a Long-Lived Access Token stored as `HA_DEPLOY` in `.env`.
 - [x] **Notification when charging complete**
 - [ ] **Button to say 'cooking over'**
-*   [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
-*   [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?
+* [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
+* [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?
