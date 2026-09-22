@@ -47,10 +47,12 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ## ⚙️ Configuration & Deployment
 
 ### File Structure
-*   **Automations:** Files in `src/automations/*.yaml` are combined into `dist/automations.yaml`.
-*   **Scripts:** Files in `src/scripts/*.yaml` are combined into `dist/scripts.yaml`.
+*   **Automations:** Files in `src/automations/*.yaml` are copied as-is to `dist/src/automations/`. `configuration.yaml` picks them up with `!include_dir_list src/automations`, so each file must contain a single automation (with a stable `id:` field).
+*   **Scripts:** Files in `src/scripts/*.yaml` are copied as-is to `dist/src/scripts/`. `configuration.yaml` picks them up with `!include_dir_merge_named src/scripts`, so each file's content must be nested under a single top-level key matching the script's id (e.g. `notify_simon:`).
 *   **Helpers & Config:** `src/helpers.yaml` and `src/configuration.yaml` are copied to `dist/`.
 *   **Web Assets:** Files in `src/www/` are copied to `dist/www/`.
+
+Because HA resolves `!include_dir_*` paths relative to its config root, the deployed HA config directory needs a `src/automations/` and `src/scripts/` folder of its own — `combine.py --deploy` uploads `dist/src/` (via `rsync --delete`, so files removed locally are also removed on the HA host) alongside the usual flat files.
 
 ### 🚀 How to Update & Upload
 
