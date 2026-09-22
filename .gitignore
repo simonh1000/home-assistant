@@ -4,6 +4,8 @@
 
 ignore
 dist
+__pycache__
+*.pyc
 
 automations.yaml
 scripts.yaml
