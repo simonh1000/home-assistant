@@ -52,16 +52,19 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 *   **Web Assets:** Local images or files for the UI should be placed in `/config/www/`.
 
 ### 🚀 How to Update & Upload
+
 1.  **Consolidate:** Run `./combine.py` in this folder to generate output in `dist/`.
 2.  **Upload:** Run `./combine.py --deploy` (requires `.env` setup). This will upload both `dist/automations.yaml` and `dist/scripts.yaml`.
 3.  **Reload:** Go to HA -> **Settings -> Tools -> YAML** -> click **Automations** and **Scripts**.
+    - *Note:* If `HA_DEPLOY` token is set in `.env`, the script will automatically trigger a reload and update the version state.
 
 ---
 
 ## 📝 TODO
-*   [ ] Add `/src` directory
-*   [ ] **Automate Reload**: Add support for Home Assistant API to automatically trigger `automation.reload` and `script.reload` after deployment. Requires a Long-Lived Access Token stored as `HA_TOKEN` in `.env`.
-*   [x] **Notification when charging complete**
-*   [ ] **Button to say 'cooking over'**
+
+- [ ] Add `/src` directory
+- [x] **Automate Reload**: Add support for Home Assistant API to automatically trigger `automation.reload` and `script.reload` after deployment. Requires a Long-Lived Access Token stored as `HA_DEPLOY` in `.env`.
+- [x] **Notification when charging complete**
+- [ ] **Button to say 'cooking over'**
 *   [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
 *   [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?

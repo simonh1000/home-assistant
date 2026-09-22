@@ -9,5 +9,8 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-# state for the guardian script
-input_boolean: !include helpers.yaml
+# homeassistant.packages allow a single YAML file to define multiple domains together
+homeassistant:
+  packages:
+    # state for the guardian script (but NOT name-spacing!)
+    guardian_state: !include helpers.yaml

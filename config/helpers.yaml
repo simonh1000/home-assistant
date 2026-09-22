@@ -7,3 +7,11 @@ ev_guardian_yielding:
 ev_guardian_quiet:
   name: "EV Guardian: House Quiet"
   icon: mdi:home-silent
+
+input_text:
+  config_version:
+    name: "Config Version"
+    icon: mdi:version
+  config_deployed:
+    name: "Config Deployed At"
+    icon: mdi:clock-outline
