@@ -3,10 +3,10 @@
 .vscode
 .idea
 
-ignore
-dist
 __pycache__
+.pytest_cache
+.venv
 *.pyc
+dist
 
-automations.yaml
-scripts.yaml
+ignore
