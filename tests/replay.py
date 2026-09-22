@@ -171,10 +171,15 @@ def main() -> None:
         print("-" * 90)
         print(f"MAX RAW 15-MIN PEAK      : {max_raw:.1f} W  ({max_raw/1000:.2f} kW)  [Window: {max_raw_win}]")
         print(f"MAX GUARDIAN SIM PEAK    : {max_sim:.1f} W  ({max_sim/1000:.2f} kW)  [Window: {max_sim_win}]")
-        peak_reduction = max_raw - max_sim
-        if peak_reduction > 0:
-            annual_savings = (peak_reduction / 1000.0) * 64.6
-            print(f"NET PEAK REDUCTION       : {peak_reduction:.1f} W  ({peak_reduction/1000.0:.2f} kW)")
+        
+        # Savings are calculated based on avoiding peaks above the 6.0 kW target
+        peak_above_6k_raw = max(0.0, max_raw - 6000.0)
+        peak_above_6k_sim = max(0.0, max_sim - 6000.0)
+        peak_avoided = peak_above_6k_raw - peak_above_6k_sim
+
+        if peak_avoided > 0:
+            annual_savings = (peak_avoided / 1000.0) * 64.6
+            print(f"PEAK ABOVE 6kW AVOIDED   : {peak_avoided:.1f} W  ({peak_avoided/1000.0:.2f} kW)")
             print(f"ESTIMATED TARIFF SAVINGS : ~€{annual_savings:.2f} / year (at €64.6/kW/yr incl. VAT)")
         print("=" * 90)
 
