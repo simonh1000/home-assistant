@@ -1,12 +1,51 @@
-# options: 'on'/'off'
-ev_guardian_yielding:
-  name: "EV Guardian: Yielding"
-  icon: mdi:ev-station
+# ======================================================================
+# EV Guardian State Machine & Helpers
+#
+#                    +-----------------------------------+
+#                    |               IDLE                |
+#                    |  (EV Charging / Normal Monitoring)|
+#                    +-----------------------------------+
+#                                      |
+#                                      | [P1 > 6.0 kW for 30s]
+#                                      v
+#                    +-----------------------------------+
+#                    |             YIELDING              |
+#                    |   (EV Paused, House Draw High)    |
+#                    +-----------------------------------+
+#                         |                         ^
+#    [P1 < 500W for 2m]   |                         | [P1 > 800W for 15s]
+#                         v                         |
+#                    +-----------------------------------+
+#                    |             COOLDOWN              |
+#                    |   (EV Paused, House Draw Quiet)   |
+#                    +-----------------------------------+
+#                                      |
+#                                      | [10m Total Yielding Timer Elapsed]
+#                                      v
+#                    +-----------------------------------+
+#                    |               IDLE                |
+#                    |       (EV Resumes Charging)       |
+#                    +-----------------------------------+
+#
+#   ======================================================================
+#   * OVERRIDES:
+#     - "Cooking Over" button press  --> Resets YIELDING or COOLDOWN to IDLE
+#     - 22:30 Safety Net             --> Resets YIELDING or COOLDOWN to IDLE
+#   ======================================================================
 
-# options: 'on'/'off'
-ev_guardian_quiet:
-  name: "EV Guardian: House Quiet"
-  icon: mdi:home-silent
+input_select:
+  ev_guardian_state:
+    name: "EV Guardian State"
+    options:
+      - idle
+      - yielding
+      - cooldown
+    icon: mdi:ev-station
+
+input_boolean:
+  ev_cooking_over:
+    name: "EV Guardian: Cooking Over"
+    icon: mdi:stove
 
 input_text:
   config_version:

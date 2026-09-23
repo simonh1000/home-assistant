@@ -1,30 +1,31 @@
-title: EV Guardian Status
+title: EV Guardian
 views:
-  - title: Home
+  - title: Monitoring
     cards:
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: input_select.ev_guardian_state
+            name: Guardian Status
+          - type: button
+            entity: input_boolean.ev_cooking_over
+            name: Cooking Over
+            icon: mdi:stove
+            show_state: false
+            tap_action:
+              action: toggle
+
       - type: markdown
-        title: EV Guardian Status
-        content: |-
+        content: >
           ## EV Guardian State
-          ### Yielding
-
-          **{{ 'Yes 🟢' if is_state('input_boolean.ev_guardian_yielding', 'on') else 'No' }}**
-
-          Set to Yes when the Guardian has paused the EV because house load crossed **6kW** while the car was charging. Stays Yes until the house has been quiet (see below) for the required minimum period, at which point the automation resumes charging and resets this back to No.
-
-
-          ### House Quiet
-
-          **{{ 'Yes 🟢' if is_state('input_boolean.ev_guardian_quiet', 'on') else 'No' }}**
-
-          Set to Yes once load has stayed below 500W for 2 continuous minutes while a Yielding pause is active — confirming whatever caused the collision (cooking, an appliance, etc.) has actually finished, not just dipped briefly. Resets to No if load rises above 800W again, so a false "quiet" doesn't let charging resume into a load that's about to spike back up.
+          ### Current Status
+          
+          **{{ states('input_select.ev_guardian_state') | capitalize }}**
+          
+          - **Idle**: EV charging normally or monitoring for spikes.
+          - **Yielding**: Paused because house load crossed **6.0kW**. Stays here until the house is quiet.
+          - **Cooldown**: Load has been under 500W for 2 minutes. Waiting for the 10-minute total yielding timer to elapse before resuming.
           
           ---
-
+          
           [Check List](/local/checklist.html)
-
-      - type: markdown
-        title: Deployment Info
-        content: >
-          {% set t = as_datetime(states('input_text.config_deployed')) %}
-          {{ states('input_text.config_version') }} ({{ t.strftime('%d-%m-%y') if t else 'unknown' }})

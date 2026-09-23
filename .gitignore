@@ -1,11 +1,12 @@
 .DS_Store
 .env
 .vscode
+.idea
+
+__pycache__
+.pytest_cache
+.venv
+*.pyc
+dist
 
 ignore
-dist
-__pycache__
-*.pyc
-
-automations.yaml
-scripts.yaml

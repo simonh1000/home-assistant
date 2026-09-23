@@ -5,73 +5,101 @@ This system manages EV charging and house load to ensure an approx **6.0 kW** mo
 The car currently is set to limit charging to 8A
 
 ## 🧠 The Logic (15-Min Window)
+
 To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
-*   **Active Defense:** We monitor for **5 minutes above 6.5kW**.
-*   **Automatic Response:** If triggered, the EV charger is paused immediately.
-*   **Recovery:** Charging resumes once the load is low (< 4kW) or after the dinner peak.
+
+- **Active Defense:** We monitor for **5 minutes above 6.5kW**.
+- **Automatic Response:** If triggered, the EV charger is paused immediately.
+- **Recovery:** Charging resumes once the load is low (< 4kW) or after the dinner peak.
 
 ---
 
 ## 📂 Core Automations
 
 ### 1. [ev-capacity-guardian.yaml](src/automations/ev-capacity-guardian.yaml)
-*   **Power Guard:** Pauses EV if house draw > 6.5 kW for 5 minutes.
-*   **Dinner Lockout:** Automatically pauses EV daily from **18:15 to 20:00**.
-*   **Smart Resume:** Resumes charging when load drops below 4.0kW for 10 minutes, or at 06:00.
 
-### 2. [ev-approval-notifier.yaml](src/automations/ev-approval-notifier.yaml)
-*   **Security Gate:** Sends an actionable notification to both phones when the Ohme charger is "Pending Approval."
-*   **Reminder:** Sends a follow-up alert at 22:30 if the charge is still waiting.
+- **Power Guard:** Pauses EV if house draw > 6.0 kW for 30 seconds (`ev_guardian_state: yielding`).
+- **Dinner Lockout:** Automatically pauses EV daily from **18:15 to 20:00** (unless overridden by `ev_cooking_over`).
+- **Smart Resume:** Moves to `cooldown` state after 2 minutes under 500W, and resumes charging once quiet for 10 minutes total or via the 22:30 safety net.
 
-### 3. [ev-approve.yaml](src/automations/ev-approve.yaml)
-*   **Button Handler:** Processes the "Approve" button click from your mobile notification to start the charge.
+### 2. [ev-cooking-over.yaml](src/automations/ev-cooking-over.yaml)
 
-### 4. [peak-alert.yaml](src/automations/peak-alert.yaml)
-*   **Awareness Only:** Sends a warning at **6.0 kW** (sustained for 2 mins). It does not take action; it just keeps you informed.
+- **Manual Resume:** Resumes EV charging immediately when the "Cooking Over" button is pressed, ending any dinner lockout or yielding state.
 
-### 5. [ev-charge-completed.yaml](src/automations/ev-charge-completed.yaml)
-*   **Charge Completion:** Sends a notification to both phones when the Ohme charger finishes charging outside of Guardian pauses.
+### 3. [ev-approval-notifier.yaml](src/automations/ev-approval-notifier.yaml)
+
+- **Reminder:** If Ohme is pending approval at 22:30, send reminder to both phones, with approve button.
+
+### 4. [ev-approve.yaml](src/automations/ev-approve.yaml)
+
+- **Button Handler:** Processes the "Approve" button click from "reminder" notification to start the charge.
+
+### 5. [peak-alert.yaml](src/automations/peak-alert.yaml)
+
+- **Awareness Only:** Sends a warning at **6.0 kW** (sustained for 2 mins). It does not take action; it just keeps you informed.
+
+### 6. [ev-charge-completed.yaml](src/automations/ev-charge-completed.yaml)
+
+- **Charge Completion:** Sends a notification to both phones when the Ohme charger finishes charging outside of Guardian pauses.
+
+---
+
+## 🏠 Dashboard Widget
+
+The system now includes a managed dashboard **Capacity Guardian** defined in `src/ui-lovelace.yaml` and is automatically deployed to Home Assistant alongside your automations and scripts.
+
+To use it, ensure your Home Assistant is in **YAML Mode** for dashboards (this is handled by the included `configuration.yaml`).
+
+The dashboard includes:
+
+1.  **Guardian Status**: Real-time view of the `Idle`, `Yielding`, or `Cooldown` state.
+2.  **Cooking Over Button**: Manual override to resume charging.
+3.  **State explanation**: A markdown card detailing what each state means.
 
 ---
 
 ## 📜 Helper Scripts
 
 ### [notify_both_phones.yaml](src/scripts/notify_both_phones.yaml)
-*   A centralized script used by other automations to send alerts to both Pixel 10 and Pixel 8 simultaneously.
+
+- A centralized script used by other automations to send alerts to both Pixel 10 and Pixel 8 simultaneously.
 
 ### [notify_simon.yaml](src/scripts/notify_simon.yaml) & [notify_liesbeth.yaml](src/scripts/notify_liesbeth.yaml)
-*   Targeted notification scripts for Pixel 10 (Simon) and Pixel 8 (Liesbeth) individually.
+
+- Targeted notification scripts for Pixel 10 (Simon) and Pixel 8 (Liesbeth) individually.
 
 ---
 
 ## ⚙️ Configuration & Deployment
 
 ### File Structure
-*   **Automations:** Files in `src/automations/*.yaml` are copied as-is to `dist/src/automations/`. `configuration.yaml` picks them up with `!include_dir_list src/automations`, so each file must contain a single automation (with a stable `id:` field).
-*   **Scripts:** Files in `src/scripts/*.yaml` are copied as-is to `dist/src/scripts/`. `configuration.yaml` picks them up with `!include_dir_merge_named src/scripts`, so each file's content must be nested under a single top-level key matching the script's id (e.g. `notify_simon:`).
-*   **Helpers & Config:** `src/helpers.yaml` and `src/configuration.yaml` are copied to `dist/`.
-*   **Web Assets:** Files in `src/www/` are copied to `dist/www/`.
+
+- **Automations:** Files in `src/automations/*.yaml` are copied as-is to `dist/src/automations/`. `configuration.yaml` picks them up with `!include_dir_list src/automations`, so each file must contain a single automation (with a stable `id:` field).
+- **Scripts:** Files in `src/scripts/*.yaml` are copied as-is to `dist/src/scripts/`. `configuration.yaml` picks them up with `!include_dir_merge_named src/scripts`, so each file's content must be nested under a single top-level key matching the script's id (e.g. `notify_simon:`).
+- **Helpers & Config:** `src/helpers.yaml` and `src/configuration.yaml` are copied to `dist/`.
+- **Web Assets:** Files in `src/www/` are copied to `dist/www/`.
 
 Because HA resolves `!include_dir_*` paths relative to its config root, the deployed HA config directory needs a `src/automations/` and `src/scripts/` folder of its own — `combine.py --deploy` uploads `dist/src/` (via `rsync --delete`, so files removed locally are also removed on the HA host) alongside the usual flat files.
 
 ### 🚀 How to Update & Upload
 
 1.  **Consolidate:** Run `./combine.py` to generate output in `dist/`.
-2.  **Upload:** Run `./combine.py --deploy` (requires `.env` setup). 
-    - **Versioning:** The script uses the `VERSION` file in the root. 
+2.  **Upload:** Run `./combine.py --deploy` (requires `.env` setup).
+    - **Versioning:** The script uses the `VERSION` file in the root.
     - You must **manually** increment the version in the `VERSION` file before merging a PR to `main` (the CI check enforces this).
     - Alternatively, run `./combine.py --deploy -v 1.2.0` to update the file and deploy in one go.
     - This will upload automations, scripts, helpers, configuration, and web assets.
 3.  **Reload:** Go to HA -> **Settings -> Tools -> YAML** -> click **Automations** and **Scripts**.
-    - *Note:* If `HA_DEPLOY` token is set in `.env`, the script will automatically trigger a reload and update the version state.
+    - _Note:_ If `HA_DEPLOY` token is set in `.env`, the script will automatically trigger a reload and update the version state.
 
 ---
 
 ## 📝 TODO
 
-- [ ] Add `/src` directory
+- [x] Add `/src` directory
 - [x] **Automate Reload**: Add support for Home Assistant API to automatically trigger `automation.reload` and `script.reload` after deployment. Requires a Long-Lived Access Token stored as `HA_DEPLOY` in `.env`.
 - [x] **Notification when charging complete**
-- [ ] **Button to say 'cooking over'**
-*   [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
-*   [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?
+- [x] **Button to say 'cooking over'**
+
+* [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
+* [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?
