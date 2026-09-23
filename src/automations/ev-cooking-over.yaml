@@ -1,12 +1,11 @@
 alias: "EV: Cooking Over Button Handler"
 description: |
-  Resumes EV charging early when the 'Cooking Over' helper toggle is turned on
-  or when tapped from a notification action. Resets Guardian state to idle and
-  switches Ohme back to smart_charge.
+  Resumes EV charging early when the 'Pause EV for Cooking' helper toggle is turned off
+  or when tapped from a notification action. Switches Ohme back to smart_charge if paused.
 triggers:
   - trigger: state
-    entity_id: input_boolean.ev_cooking_over
-    to: "on"
+    entity_id: input_boolean.pause_for_cooking
+    to: "off"
     id: ui_toggle
   - trigger: event
     event_type: mobile_app_notification_action
@@ -15,16 +14,14 @@ triggers:
     id: notification_action
 conditions: []
 actions:
-  - action: input_boolean.turn_on
+  - action: input_boolean.turn_off
     target:
-      entity_id: input_boolean.ev_cooking_over
-  - action: select.select_option
-    target:
-      entity_id: input_select.ev_guardian_state
-    data:
-      option: idle
+      entity_id: input_boolean.pause_for_cooking
   - choose:
       - conditions:
+          - condition: state
+            entity_id: input_select.ev_guardian_state
+            state: "idle"
           - condition: state
             entity_id: sensor.ohme_home_pro_delta_11kw_status
             state: "paused"

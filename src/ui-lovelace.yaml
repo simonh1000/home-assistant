@@ -7,25 +7,24 @@ views:
           - type: entity
             entity: input_select.ev_guardian_state
             name: Guardian Status
-          - type: button
-            entity: input_boolean.ev_cooking_over
-            name: Cooking Over
+          - type: entity
+            entity: input_boolean.pause_for_cooking
+            name: Pause for Cooking
             icon: mdi:stove
-            show_state: false
             tap_action:
               action: toggle
 
       - type: markdown
         content: >
           ## EV Guardian State
-          ### Current Status
-          
+
           **{{ states('input_select.ev_guardian_state') | capitalize }}**
-          
+
           - **Idle**: EV charging normally or monitoring for spikes.
           - **Yielding**: Paused because house load crossed **6.0kW**. Stays here until the house is quiet.
           - **Cooldown**: Load has been under 500W for 2 minutes. Waiting for the 10-minute total yielding timer to elapse before resuming.
-          
+          - **Dinner Lockout**: **{{ 'Active (EV Paused)' if is_state('input_boolean.pause_for_cooking', 'on') else 'Inactive' }}** (18:15 to 20:30).
+
           ---
-          
+
           [Check List](/local/checklist.html)
