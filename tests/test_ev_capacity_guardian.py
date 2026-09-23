@@ -1,5 +1,5 @@
 import pytest
-from datetime import timedelta
+from datetime import datetime, timedelta
 import homeassistant.util.dt as dt_util
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
@@ -85,3 +85,26 @@ async def test_quiet_house_yielding_to_cooldown(hass, setup_ha_guardian, freezer
     await hass.async_block_till_done()
 
     assert hass.states.get("input_select.ev_guardian_state").state == "cooldown"
+
+
+async def test_dinner_lockout_activates_pause_for_cooking(hass, setup_ha_guardian, freezer):
+    """Test dinner window at 18:15 sets pause_for_cooking = ON and pauses charging."""
+    service_calls = setup_ha_guardian
+
+    # Set initial time to 18:14:59
+    start_time = datetime(2026, 9, 23, 18, 14, 59, tzinfo=dt_util.DEFAULT_TIME_ZONE)
+    freezer.move_to(start_time)
+    async_fire_time_changed(hass, start_time)
+
+    hass.states.async_set("sensor.ohme_home_pro_delta_11kw_status", "charging")
+    hass.states.async_set("input_boolean.pause_for_cooking", "off")
+    await hass.async_block_till_done()
+
+    # Advance virtual clock to 18:15:00
+    at_dinner = start_time + timedelta(seconds=1)
+    freezer.move_to(at_dinner)
+    async_fire_time_changed(hass, at_dinner)
+    await hass.async_block_till_done()
+
+    # Verify pause_for_cooking is turned ON
+    assert hass.states.get("input_boolean.pause_for_cooking").state == "on"

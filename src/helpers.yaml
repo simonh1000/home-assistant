@@ -28,9 +28,11 @@
 #                    +-----------------------------------+
 #
 #   ======================================================================
-#   * OVERRIDES:
-#     - "Cooking Over" button press  --> Resets YIELDING or COOLDOWN to IDLE
-#     - 22:30 Safety Net             --> Resets YIELDING or COOLDOWN to IDLE
+#   * DINNER LOCKOUT (pause_for_cooking):
+#     - 18:15 Auto Start          --> Sets pause_for_cooking = ON (EV Paused)
+#     - "Cooking Done" Toggle/Off  --> Sets pause_for_cooking = OFF (EV Resumes)
+#     - 20:30 Auto Timeout        --> Sets pause_for_cooking = OFF (EV Resumes)
+#     - 22:30 Safety Net          --> Resets YIELDING/COOLDOWN to IDLE & Cooking OFF
 #   ======================================================================
 
 input_select:
@@ -43,8 +45,8 @@ input_select:
     icon: mdi:ev-station
 
 input_boolean:
-  ev_cooking_over:
-    name: "EV Guardian: Cooking Over"
+  pause_for_cooking:
+    name: "Pause EV for Cooking"
     icon: mdi:stove
 
 input_text:
@@ -54,3 +56,4 @@ input_text:
   config_deployed:
     name: "Config Deployed At"
     icon: mdi:clock-outline
+
