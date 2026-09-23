@@ -56,4 +56,6 @@ sensor.p1_meter_power_phase_3: n/a
 
 sensor.p1_meter_average_demand: n/a
 
+- Your average power consumption over a specific rolling 15-minute window (expressed in kilowatts, kW).
+
 sensor.p1_meter_peak_demand_current_month: n/a
