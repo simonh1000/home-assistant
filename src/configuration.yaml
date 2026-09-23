@@ -5,6 +5,7 @@ default_config:
 frontend:
   themes: !include_dir_merge_named themes
 
+# Enable YAML mode for dashboards
 lovelace:
   mode: storage
   dashboards:
@@ -16,6 +17,9 @@ lovelace:
 
 automation: !include_dir_list src/automations
 script: !include_dir_merge_named src/scripts
+
+# saved snapshots of specific states for multiple devices or entities (like lights, media players, and covers)
+# that allow you to restore a precise configuration all at once
 scene: !include scenes.yaml
 
 # homeassistant.packages allow a single YAML file to define multiple domains together

@@ -227,6 +227,13 @@ def update_ha_version_state(version_tag):
         except subprocess.CalledProcessError as e:
             print(f"Failed to update {entity_id}: {e}")
 
+def print_reload_reminder():
+    """Print a prominent reminder to reload YAML in Home Assistant."""
+    print("\n" + "="*60)
+    print("REMINDER: You must RELOAD your YAML in Home Assistant:")
+    print("Settings -> Tools -> YAML -> AUTOMATIONS & SCRIPTS")
+    print("="*60 + "\n")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Combine and deploy HA config.")
     parser.add_argument("--deploy", action="store_true", help="Upload to Home Assistant")
@@ -249,3 +256,4 @@ if __name__ == "__main__":
             reload_ha_yaml()
             update_ha_version_state(target_v)
         
+        print_reload_reminder()
