@@ -1,13 +1,9 @@
 alias: "EV: Cooking Over Button Handler"
 description: |
-  Resumes EV charging early when the 'Cooking Over' helper toggle is turned on
-  or when tapped from a notification action. Resets Guardian state to idle and
-  switches Ohme back to smart_charge.
+  Resumes EV charging early when the 'Cooking Over' button is pressed or when tapped from
+  a notification action. Transitions ev_guardian_state from cooking -> idle and switches
+  Ohme back to smart_charge if paused.
 triggers:
-  - trigger: state
-    entity_id: input_boolean.ev_cooking_over
-    to: "on"
-    id: ui_toggle
   - trigger: event
     event_type: mobile_app_notification_action
     event_data:
@@ -15,35 +11,38 @@ triggers:
     id: notification_action
 conditions: []
 actions:
-  - action: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.ev_cooking_over
-  - action: select.select_option
-    target:
-      entity_id: input_select.ev_guardian_state
-    data:
-      option: idle
   - choose:
       - conditions:
           - condition: state
-            entity_id: sensor.ohme_home_pro_delta_11kw_status
-            state: "paused"
+            entity_id: input_select.ev_guardian_state
+            state: "cooking"
         sequence:
           - action: select.select_option
             target:
-              entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+              entity_id: input_select.ev_guardian_state
             data:
-              option: smart_charge
-          - action: script.notify_both_phones
-            data:
-              title: "EV Resumed"
-              message: |
-                [{{ now().strftime('%H:%M') }}] Cooking window ended manually — EV charging resumed.
-      - conditions: []
-        sequence:
-          - action: script.notify_both_phones
-            data:
-              title: "Cooking Window Ended"
-              message: |
-                [{{ now().strftime('%H:%M') }}] Cooking window ended manually (EV was not currently paused).
+              option: idle
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: sensor.ohme_home_pro_delta_11kw_status
+                    state: "paused"
+                sequence:
+                  - action: select.select_option
+                    target:
+                      entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+                    data:
+                      option: smart_charge
+                  - action: script.notify_both_phones
+                    data:
+                      title: "EV Resumed"
+                      message: |
+                        [{{ now().strftime('%H:%M') }}] Cooking window ended manually — EV charging resumed.
+              - conditions: []
+                sequence:
+                  - action: script.notify_both_phones
+                    data:
+                      title: "Cooking Window Ended"
+                      message: |
+                        [{{ now().strftime('%H:%M') }}] Cooking window ended manually.
 mode: single

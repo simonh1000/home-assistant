@@ -27,18 +27,8 @@ async def setup_ha_guardian(hass, guardian_automation_config):
         "input_select": {
             "ev_guardian_state": {
                 "name": "EV Guardian State",
-                "options": ["idle", "yielding", "cooldown"],
+                "options": ["idle", "cooking", "yielding", "cooldown"],
                 "initial": "idle"
-            }
-        }
-    })
-
-    # Setup input_boolean
-    await async_setup_component(hass, "input_boolean", {
-        "input_boolean": {
-            "ev_cooking_over": {
-                "name": "EV Cooking Over",
-                "initial": "off"
             }
         }
     })
