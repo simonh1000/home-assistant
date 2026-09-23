@@ -5,49 +5,40 @@
 #                    |               IDLE                |
 #                    |  (EV Charging / Normal Monitoring)|
 #                    +-----------------------------------+
-#                                      |
-#                                      | [P1 > 6.0 kW for 30s]
-#                                      v
-#                    +-----------------------------------+
-#                    |             YIELDING              |
-#                    |   (EV Paused, House Draw High)    |
-#                    +-----------------------------------+
-#                         |                         ^
-#    [P1 < 500W for 2m]   |                         | [P1 > 800W for 15s]
-#                         v                         |
-#                    +-----------------------------------+
-#                    |             COOLDOWN              |
-#                    |   (EV Paused, House Draw Quiet)   |
-#                    +-----------------------------------+
-#                                      |
-#                                      | [10m Total Yielding Timer Elapsed]
-#                                      v
-#                    +-----------------------------------+
-#                    |               IDLE                |
-#                    |       (EV Resumes Charging)       |
-#                    +-----------------------------------+
+#                      /             |             \
+# [18:15 Dinner Start]/              |              \[P1 > 6.0 kW for 30s]
+#                    v               |               v
+#      +-------------------+         |         +-------------------+
+#      |      COOKING      |         |         |     YIELDING      |
+#      | (Paused for Dinner|         |         | (Paused for Load) |
+#      +-------------------+         |         +-------------------+
+#                |                   |                   |
+#   [Cooking Done|                   | [22:30 Safety]    | [P1 < 500W for 2m]
+#    / 20:30 End]|                   v                   v
+#                |          +-----------------+ +-------------------+
+#                +--------->|      IDLE       | |     COOLDOWN      |
+#                           |(Resumes Charging)| | (House Load Low) |
+#                           +-----------------+ +-------------------+
+#                                    ^                   |
+#                                    | [10m Elapsed]     |
+#                                    +-------------------+
+#                                                        | [P1 > 800W for 15s]
+#                                                        v
+#                                              +-------------------+
+#                                              |     YIELDING      |
+#                                              +-------------------+
 #
-#   ======================================================================
-#   * DINNER LOCKOUT (pause_for_cooking):
-#     - 18:15 Auto Start          --> Sets pause_for_cooking = ON (EV Paused)
-#     - "Cooking Done" Toggle/Off  --> Sets pause_for_cooking = OFF (EV Resumes)
-#     - 20:30 Auto Timeout        --> Sets pause_for_cooking = OFF (EV Resumes)
-#     - 22:30 Safety Net          --> Resets YIELDING/COOLDOWN to IDLE & Cooking OFF
-#   ======================================================================
+# ======================================================================
 
 input_select:
   ev_guardian_state:
     name: "EV Guardian State"
     options:
       - idle
+      - cooking
       - yielding
       - cooldown
     icon: mdi:ev-station
-
-input_boolean:
-  pause_for_cooking:
-    name: "Pause EV for Cooking"
-    icon: mdi:stove
 
 input_text:
   config_version:
@@ -56,4 +47,3 @@ input_text:
   config_deployed:
     name: "Config Deployed At"
     icon: mdi:clock-outline
-
