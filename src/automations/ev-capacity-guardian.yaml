@@ -2,8 +2,8 @@ id: ev_capacity_guardian
 alias: "EV: Capacity Guardian"
 description: |
   Makes the EV yield to sustained house load and reserves the dinner period.
-  Requires input_select.ev_guardian_state (idle, yielding, cooldown) and
-  input_boolean.pause_for_cooking. Uses sensor.p1_meter_power in Watts.
+  Uses 4-state input_select.ev_guardian_state (idle, cooking, yielding, cooldown).
+  Uses sensor.p1_meter_power in Watts.
 
 variables:
   ohme_state: "{{ states('sensor.ohme_home_pro_delta_11kw_status') }}"
@@ -46,10 +46,13 @@ conditions: []
 
 actions:
   - choose:
-      # 1. High house load collision: pause EV and move to YIELDING
+      # 1. High house load collision: pause EV and move to YIELDING (only when idle)
       - conditions:
           - condition: trigger
             id: "high_load"
+          - condition: state
+            entity_id: input_select.ev_guardian_state
+            state: "idle"
           - condition: state
             entity_id: sensor.ohme_home_pro_delta_11kw_status
             state: "charging"
@@ -67,7 +70,7 @@ actions:
                 [{{ now().strftime('%H:%M') }}] House load stayed above 6.0kW
                 for 30 seconds. EV paused to yield to the house.
 
-      # 2. High load notification (EV not charging)
+      # 2. High load notification (EV not charging / not idle)
       - conditions:
           - condition: trigger
             id: "high_load"
@@ -77,9 +80,9 @@ actions:
               title: "High Load — Not the EV"
               message: |
                 [{{ now().strftime('%H:%M') }}] House load stayed above 6.0kW
-                for 30 seconds while the EV was not charging (status: {{ ohme_state }}).
+                for 30 seconds while the EV was not charging (status: {{ ohme_state }}, guardian: {{ guardian_state }}).
 
-      # 3. Dinner lockout (18:15 - 20:30): pause EV and set pause_for_cooking = ON
+      # 3. Dinner lockout start (18:15 - 20:30): transition idle -> cooking
       - conditions:
           - condition: trigger
             id: "dinner_check"
@@ -87,11 +90,12 @@ actions:
             after: "18:15:00"
             before: "20:30:00"
           - condition: state
-            entity_id: input_boolean.pause_for_cooking
-            state: "off"
+            entity_id: input_select.ev_guardian_state
+            state: "idle"
         sequence:
-          - action: input_boolean.turn_on
-            target: { entity_id: input_boolean.pause_for_cooking }
+          - action: select.select_option
+            target: { entity_id: input_select.ev_guardian_state }
+            data: { option: cooking }
           - choose:
               - conditions:
                   - condition: state
@@ -106,7 +110,26 @@ actions:
                       title: "EV Paused"
                       message: "[{{ now().strftime('%H:%M') }}] Paused for the dinner window."
 
-      # 4. Yielding -> Cooldown: set to cooldown after 2 mins under 500W
+      # 4. Plugged in / status becomes charging while guardian is already in cooking state
+      - conditions:
+          - condition: trigger
+            id: "dinner_check"
+          - condition: state
+            entity_id: input_select.ev_guardian_state
+            state: "cooking"
+          - condition: state
+            entity_id: sensor.ohme_home_pro_delta_11kw_status
+            state: "charging"
+        sequence:
+          - action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: paused }
+          - action: script.notify_both_phones
+            data:
+              title: "EV Paused"
+              message: "[{{ now().strftime('%H:%M') }}] EV plugged in during dinner window — Paused for cooking."
+
+      # 5. Yielding -> Cooldown: set to cooldown after 2 mins under 500W
       - conditions:
           - condition: trigger
             id: "quiet_house"
@@ -122,7 +145,7 @@ actions:
               title: "House Quiet"
               message: "[{{ now().strftime('%H:%M') }}] House draw dropped below 500W for 2 minutes. Cooling down..."
 
-      # 5. Cooldown -> Yielding: house load rises again
+      # 6. Cooldown -> Yielding: house load rises again
       - conditions:
           - condition: trigger
             id: "house_no_longer_quiet"
@@ -134,21 +157,19 @@ actions:
             target: { entity_id: input_select.ev_guardian_state }
             data: { option: yielding }
 
-      # 6. Dinner window end (20:30): turn off pause_for_cooking and resume EV if idle
+      # 7. Dinner window end (20:30): transition cooking -> idle
       - conditions:
           - condition: trigger
             id: "dinner_end"
           - condition: state
-            entity_id: input_boolean.pause_for_cooking
-            state: "on"
+            entity_id: input_select.ev_guardian_state
+            state: "cooking"
         sequence:
-          - action: input_boolean.turn_off
-            target: { entity_id: input_boolean.pause_for_cooking }
+          - action: select.select_option
+            target: { entity_id: input_select.ev_guardian_state }
+            data: { option: idle }
           - choose:
               - conditions:
-                  - condition: state
-                    entity_id: input_select.ev_guardian_state
-                    state: "idle"
                   - condition: state
                     entity_id: sensor.ohme_home_pro_delta_11kw_status
                     state: "paused"
@@ -161,12 +182,12 @@ actions:
                       title: "EV Resumed"
                       message: "[{{ now().strftime('%H:%M') }}] Dinner window ended — EV charging resumed."
 
-      # 7. Collision recovery: resume after 10m total state time
+      # 8. Collision recovery: resume after 10m total state time
       - conditions:
           - condition: trigger
             id: "resume_check"
           - condition: template
-            value_template: "{{ guardian_state != 'idle' }}"
+            value_template: "{{ guardian_state in ['yielding', 'cooldown'] }}"
           - condition: time
             after: "20:30:00"
             before: "18:15:00"
@@ -185,8 +206,6 @@ actions:
           - action: select.select_option
             target: { entity_id: input_select.ev_guardian_state }
             data: { option: idle }
-          - action: input_boolean.turn_off
-            target: { entity_id: input_boolean.pause_for_cooking }
           - action: script.notify_both_phones
             data:
               title: "EV Resumed"
@@ -194,20 +213,21 @@ actions:
                 [{{ now().strftime('%H:%M') }}] House has been quiet and the
                 Guardian minimum pause has elapsed.
 
-      # 8. Safety net: force resume by 22:30
+      # 9. Safety net: force resume by 22:30
       - conditions:
           - condition: trigger
             id: "safety_net"
-          - condition: state
-            entity_id: sensor.ohme_home_pro_delta_11kw_status
-            state: "paused"
         sequence:
-          - action: select.select_option
-            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
-            data: { option: smart_charge }
           - action: select.select_option
             target: { entity_id: input_select.ev_guardian_state }
             data: { option: idle }
-          - action: input_boolean.turn_off
-            target: { entity_id: input_boolean.pause_for_cooking }
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: sensor.ohme_home_pro_delta_11kw_status
+                    state: "paused"
+                sequence:
+                  - action: select.select_option
+                    target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+                    data: { option: smart_charge }
 mode: single

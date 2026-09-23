@@ -114,6 +114,10 @@ async def test_replay_csv_through_ha_engine(hass, setup_ha_guardian, freezer):
                 return "House load dropped, starting cooldown"
             elif from_st == "cooldown" and to_st == "yielding":
                 return "House load increased, reverted yielding"
+            elif from_st == "idle" and to_st == "cooking":
+                return "Dinner window active, EV paused"
+            elif from_st == "cooking" and to_st == "idle":
+                return "Dinner window ended, state set idle"
             elif to_st == "idle":
                 return "Conditions clear, state set idle"
         elif entity == "ev_charge_mode":
