@@ -11,14 +11,15 @@ from pathlib import Path
 VERSION_FILE = Path("VERSION")
 DIST_DIR = Path("dist")
 # configuration.yaml pulls these in via !include_dir_list / !include_dir_merge_named,
-# which HA resolves relative to the config root — so the "src/..." path has to be
-# preserved all the way to the deployed HA config directory, not flattened.
+# which HA resolves relative to the config root.
 AUTOMATIONS_SOURCE = Path("src/automations")
-AUTOMATIONS_DIST = DIST_DIR / "src/automations"
+AUTOMATIONS_DIST = DIST_DIR / "automations"
 SCRIPTS_SOURCE = Path("src/scripts")
-SCRIPTS_DIST = DIST_DIR / "src/scripts"
-HELPERS_FILE = DIST_DIR / "helpers.yaml"
-HELPERS_SOURCE = Path("src/helpers.yaml")
+SCRIPTS_DIST = DIST_DIR / "scripts"
+HELPERS_SOURCE = Path("src/helpers")
+HELPERS_DIST = DIST_DIR / "helpers"
+MODBUS_SOURCE = Path("src/modbus")
+MODBUS_DIST = DIST_DIR / "modbus"
 CONFIG_FILE = DIST_DIR / "configuration.yaml"
 CONFIG_SOURCE = Path("src/configuration.yaml")
 DASHBOARD_FILE = DIST_DIR / "ui-lovelace.yaml"
@@ -65,46 +66,60 @@ def save_version(version):
 def copy_tree(source_dir, dist_dir):
     """Mirror a source directory into dist, replacing whatever was there before."""
     if not source_dir.exists():
+        print(f"  ! Source {source_dir} does not exist.")
         return False
     if dist_dir.exists():
         shutil.rmtree(dist_dir)
     dist_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source_dir, dist_dir)
+    
+    # List files copied to provide more feedback
+    for path in dist_dir.rglob('*'):
+        if path.is_file():
+            print(f"  + {path.relative_to(DIST_DIR.parent)}")
     return True
 
 def combine(version_tag=None):
     """Stage everything HA needs into dist/, mirroring the src/ layout configuration.yaml expects."""
+    if DIST_DIR.exists():
+        print(f"Cleaning {DIST_DIR}...")
+        shutil.rmtree(DIST_DIR)
+    DIST_DIR.mkdir(parents=True, exist_ok=True)
+
     print(f"Copying {AUTOMATIONS_SOURCE} to {AUTOMATIONS_DIST}...")
     a_success = copy_tree(AUTOMATIONS_SOURCE, AUTOMATIONS_DIST)
 
     print(f"Copying {SCRIPTS_SOURCE} to {SCRIPTS_DIST}...")
     s_success = copy_tree(SCRIPTS_SOURCE, SCRIPTS_DIST)
 
+    print(f"Copying {HELPERS_SOURCE} to {HELPERS_DIST}...")
+    h_success = copy_tree(HELPERS_SOURCE, HELPERS_DIST)
+
+    print(f"Copying {MODBUS_SOURCE} to {MODBUS_DIST}...")
+    m_success = copy_tree(MODBUS_SOURCE, MODBUS_DIST)
+
     if version_tag:
         with open(DIST_DIR / "version.txt", "w") as f:
             f.write(version_tag)
 
-    # Copy helpers.yaml to dist
-    if HELPERS_SOURCE.exists():
-        print(f"Copying {HELPERS_SOURCE} to {HELPERS_FILE}...")
-        shutil.copy2(HELPERS_SOURCE, HELPERS_FILE)
-
     # Copy configuration.yaml to dist
     if CONFIG_SOURCE.exists():
-        print(f"Copying {CONFIG_SOURCE} to {CONFIG_FILE}...")
+        print(f"Copying {CONFIG_SOURCE} -> {CONFIG_FILE}")
         shutil.copy2(CONFIG_SOURCE, CONFIG_FILE)
+        print(f"  + {CONFIG_FILE.relative_to(DIST_DIR.parent)}")
 
     # Copy ui-lovelace.yaml to dist
     if DASHBOARD_SOURCE.exists():
-        print(f"Copying {DASHBOARD_SOURCE} to {DASHBOARD_FILE}...")
+        print(f"Copying {DASHBOARD_SOURCE} -> {DASHBOARD_FILE}")
         shutil.copy2(DASHBOARD_SOURCE, DASHBOARD_FILE)
+        print(f"  + {DASHBOARD_FILE.relative_to(DIST_DIR.parent)}")
 
     # Copy www directory to dist
     if WWW_SOURCE.exists():
         print(f"Copying {WWW_SOURCE} to {WWW_DIST}...")
         copy_tree(WWW_SOURCE, WWW_DIST)
 
-    return a_success or s_success
+    return a_success or s_success or h_success or m_success
 
 def deploy_items(files_to_deploy, target_dir):
     """Copy files as-is; sync directories with --delete so files removed locally
@@ -115,10 +130,10 @@ def deploy_items(files_to_deploy, target_dir):
         if f.is_dir():
             print(f"Syncing directory {f} -> {target_dir}/{f.name}...")
             dest = os.path.join(target_dir, f.name) + "/"
-            subprocess.run(["rsync", "-a", "--delete", f"{f}/", dest], check=True)
+            subprocess.run(["rsync", "-av", "--delete", f"{f}/", dest], check=True)
         else:
             print(f"Copying {f}...")
-            subprocess.run(["cp", str(f), target_dir], check=True)
+            subprocess.run(["cp", "-v", str(f), target_dir], check=True)
 
 def deploy(files_to_deploy):
     """Upload the generated files to Home Assistant via SMB."""
@@ -185,7 +200,7 @@ def reload_ha_yaml():
         print(f"Reloading {service}...")
         try:
             subprocess.run([
-                "curl", "-s", "-X", "POST",
+                "curl", "-X", "POST",
                 *headers,
                 url
             ], check=True)
@@ -218,7 +233,7 @@ def update_ha_version_state(version_tag):
         data = f'{{"state": "{value}"}}'
         try:
             subprocess.run([
-                "curl", "-s", "-X", "POST",
+                "curl", "-X", "POST",
                 *headers,
                 "-d", data,
                 url
@@ -252,7 +267,15 @@ if __name__ == "__main__":
     
     if combine(version_tag=target_v):
         if args.deploy:
-            deploy([DIST_DIR / "src", HELPERS_FILE, CONFIG_FILE, DASHBOARD_FILE, WWW_DIST])
+            deploy([
+                AUTOMATIONS_DIST,
+                SCRIPTS_DIST,
+                HELPERS_DIST,
+                MODBUS_DIST,
+                CONFIG_FILE,
+                DASHBOARD_FILE,
+                WWW_DIST
+            ])
             reload_ha_yaml()
             update_ha_version_state(target_v)
         
