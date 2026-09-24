@@ -66,36 +66,27 @@ def save_version(version):
 def copy_tree(source_dir, dist_dir):
     """Mirror a source directory into dist, replacing whatever was there before."""
     if not source_dir.exists():
-        print(f"  ! Source {source_dir} does not exist.")
         return False
     if dist_dir.exists():
         shutil.rmtree(dist_dir)
     dist_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source_dir, dist_dir)
     
-    # List files copied to provide more feedback
-    for path in dist_dir.rglob('*'):
-        if path.is_file():
-            print(f"  + {path.relative_to(DIST_DIR.parent)}")
+    # Just count files for feedback
+    file_count = sum(1 for p in dist_dir.rglob('*') if p.is_file())
+    print(f"  + {dist_dir.relative_to(DIST_DIR.parent)}/ ({file_count} files)")
     return True
 
 def combine(version_tag=None):
     """Stage everything HA needs into dist/, mirroring the src/ layout configuration.yaml expects."""
     if DIST_DIR.exists():
-        print(f"Cleaning {DIST_DIR}...")
         shutil.rmtree(DIST_DIR)
     DIST_DIR.mkdir(parents=True, exist_ok=True)
 
-    print(f"Copying {AUTOMATIONS_SOURCE} to {AUTOMATIONS_DIST}...")
+    print("Staging files to /dist...")
     a_success = copy_tree(AUTOMATIONS_SOURCE, AUTOMATIONS_DIST)
-
-    print(f"Copying {SCRIPTS_SOURCE} to {SCRIPTS_DIST}...")
     s_success = copy_tree(SCRIPTS_SOURCE, SCRIPTS_DIST)
-
-    print(f"Copying {HELPERS_SOURCE} to {HELPERS_DIST}...")
     h_success = copy_tree(HELPERS_SOURCE, HELPERS_DIST)
-
-    print(f"Copying {MODBUS_SOURCE} to {MODBUS_DIST}...")
     m_success = copy_tree(MODBUS_SOURCE, MODBUS_DIST)
 
     if version_tag:
@@ -104,19 +95,16 @@ def combine(version_tag=None):
 
     # Copy configuration.yaml to dist
     if CONFIG_SOURCE.exists():
-        print(f"Copying {CONFIG_SOURCE} -> {CONFIG_FILE}")
         shutil.copy2(CONFIG_SOURCE, CONFIG_FILE)
         print(f"  + {CONFIG_FILE.relative_to(DIST_DIR.parent)}")
 
     # Copy ui-lovelace.yaml to dist
     if DASHBOARD_SOURCE.exists():
-        print(f"Copying {DASHBOARD_SOURCE} -> {DASHBOARD_FILE}")
         shutil.copy2(DASHBOARD_SOURCE, DASHBOARD_FILE)
         print(f"  + {DASHBOARD_FILE.relative_to(DIST_DIR.parent)}")
 
     # Copy www directory to dist
     if WWW_SOURCE.exists():
-        print(f"Copying {WWW_SOURCE} to {WWW_DIST}...")
         copy_tree(WWW_SOURCE, WWW_DIST)
 
     return a_success or s_success or h_success or m_success
@@ -128,12 +116,12 @@ def deploy_items(files_to_deploy, target_dir):
         if not f.exists():
             continue
         if f.is_dir():
-            print(f"Syncing directory {f} -> {target_dir}/{f.name}...")
+            print(f"Syncing {f.name}/...")
             dest = os.path.join(target_dir, f.name) + "/"
-            subprocess.run(["rsync", "-av", "--delete", f"{f}/", dest], check=True)
+            subprocess.run(["rsync", "-a", "--delete", f"{f}/", dest], check=True)
         else:
-            print(f"Copying {f}...")
-            subprocess.run(["cp", "-v", str(f), target_dir], check=True)
+            print(f"Copying {f.name}...")
+            subprocess.run(["cp", str(f), target_dir], check=True)
 
 def deploy(files_to_deploy):
     """Upload the generated files to Home Assistant via SMB."""
@@ -200,7 +188,7 @@ def reload_ha_yaml():
         print(f"Reloading {service}...")
         try:
             subprocess.run([
-                "curl", "-X", "POST",
+                "curl", "-s", "-X", "POST",
                 *headers,
                 url
             ], check=True)
@@ -233,7 +221,7 @@ def update_ha_version_state(version_tag):
         data = f'{{"state": "{value}"}}'
         try:
             subprocess.run([
-                "curl", "-X", "POST",
+                "curl", "-s", "-X", "POST",
                 *headers,
                 "-d", data,
                 url
@@ -241,13 +229,6 @@ def update_ha_version_state(version_tag):
             print(f"Updated {entity_id} to {value}")
         except subprocess.CalledProcessError as e:
             print(f"Failed to update {entity_id}: {e}")
-
-def print_reload_reminder():
-    """Print a prominent reminder to reload YAML in Home Assistant."""
-    print("\n" + "="*60)
-    print("REMINDER: You must RELOAD your YAML in Home Assistant:")
-    print("Settings -> Tools -> YAML -> AUTOMATIONS & SCRIPTS")
-    print("="*60 + "\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Combine and deploy HA config.")
@@ -279,4 +260,3 @@ if __name__ == "__main__":
             reload_ha_yaml()
             update_ha_version_state(target_v)
         
-        print_reload_reminder()

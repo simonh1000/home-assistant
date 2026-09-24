@@ -59,3 +59,7 @@ sensor.p1_meter_average_demand: n/a
 - Your average power consumption over a specific rolling 15-minute window (expressed in kilowatts, kW).
 
 sensor.p1_meter_peak_demand_current_month: n/a
+
+## EcoFlow
+
+mbpoll -m tcp -a 1 -t 4 -r 0 -c 10 192.168.0.165
