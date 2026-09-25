@@ -2,24 +2,45 @@
 
 ## Objective
 
-Keep home charging compatible with a sensible Flemish capacity-tariff peak while
+Flemish capacity-tariff peak control : Keep home charging compatible with a 6kw peak while
 still allowing a roughly 70% overnight top-up when needed. The charger should
 remain fast at public charge points; any home limit belongs at the charger or in
 home control, not in the car.
 
-Ladenburgers: EF HD-P3-6K0-S1 — that's a 6kW model
+Charge car during solar hours without emtying the EcoFlow battery
 
 ## What matters
 
 - Fluvius uses the highest **fixed 15-minute average import** in each calendar
   month. The capacity charge then reflects the rolling average of monthly peaks,
   subject to a 2.5 kW minimum.
-- Normal background use is about 0.2–0.3 kW. Home EV charging is about
+- Normal background use is about 0.1–0.25 kW. Home EV charging is about
   5.5 kW, so the meaningful risk is a substantial appliance running at the same
   time as the car. A refrigerator or freezer can create a sharp but brief spike and should not
   cause an EV pause.
 - The EV/house collision, rather than a continuously high house load, explains
   the unwanted peaks.
+
+## Energy system
+
+3-phase (3F+N) electricity
+
+12 Solar panels total, delivering a total capacity of 5,700 Wp using Aiko Neonstar All Black 475Wp modules, split into two orientations:
+* 8 east-facing panels (3.8 kWp)
+* 4 south-facing panels (1.9 kWp)
+
+EcoFlow PowerOcean 6K Inverter (HJ35)
+EcoFlow PowerOcean S1 Vloer, 5.1 kWh (HJ3A)
+EcoFlow Energy-meter 3-fase CT
+- installer opened modbus (port 502 is open, but I've only very briefly seen any data from it and generally get 'unavailable')
+
+Charger: Ohme Home Pro Delta 11kW (has 3 CT clamps connected to grid entry)
+- charging speed has been left wide open, which causes capacity pricing peaks
+
+XPeng G6 2025 Long Range: Gross Capacity: 87.5 kWh, not used heavily.
+- this is how I regulate charging speed at present
+
+Home Assistant Green EMS 
 
 ## Primary protection: charger load balancing
 
