@@ -1,0 +1,94 @@
+# Inside /modbus/ecoflow.yaml
+
+- name: ecoflow_powerocean
+  type: tcp
+  host: 192.168.0.165
+  port: 502
+
+  # -------------------------------------------------------------------
+  # READ-ONLY TELEMETRY
+  # -------------------------------------------------------------------
+  sensors:
+    # Battery State of Charge (%)
+    - name: "EcoFlow Battery SOC"
+      slave: 1
+      address: 576
+      input_type: holding
+      data_type: float32
+      swap: word
+      scale: 1.0
+      precision: 1
+      device_class: battery
+      state_class: measurement
+
+    # Grid Power (Watts: + Import / - Export)
+    - name: "EcoFlow Grid Power"
+      slave: 1
+      address: 596
+      input_type: holding
+      data_type: float32
+      swap: word
+      device_class: power
+      state_class: measurement
+
+    # Battery Power (Watts: + Charging / - Discharging)
+    - name: "EcoFlow Battery Power"
+      slave: 1
+      address: 586
+      input_type: holding
+      data_type: float32
+      swap: word
+      device_class: power
+      state_class: measurement
+
+    # Solar Production (Watts)
+    - name: "EcoFlow Solar Power"
+      slave: 1
+      address: 566
+      input_type: holding
+      data_type: float32
+      swap: word
+      device_class: power
+      state_class: measurement
+
+  # -------------------------------------------------------------------
+  # WRITABLE CONTROLS (NUMBER SLIDERS)
+  # -------------------------------------------------------------------
+  numbers:
+    # Max Discharge Power (Set to 0 W to block battery discharge)
+    - name: "EcoFlow Max Discharge Power"
+      slave: 1
+      address: 50 # Register offset for Max Discharge Power
+      input_type: holding
+      data_type: uint16
+      min_value: 0
+      max_value: 10000
+      step: 100
+      unit_of_measurement: "W"
+      device_class: power
+
+    # Backup Reserve Limit (%)
+    - name: "EcoFlow Backup Reserve"
+      slave: 1
+      address: 52 # Register offset for Backup Reserve
+      input_type: holding
+      data_type: uint16
+      min_value: 0
+      max_value: 100
+      step: 1
+      unit_of_measurement: "%"
+
+  # -------------------------------------------------------------------
+  # WRITABLE CONTROLS (DROPDOWN MODES)
+  # -------------------------------------------------------------------
+  selects:
+    # Work Mode Selector
+    - name: "EcoFlow Work Mode Control"
+      slave: 1
+      address: 54 # Register offset for Work Mode
+      input_type: holding
+      data_type: uint16
+      options:
+        0: "Self-Powered"
+        1: "Time-of-Use"
+        2: "Backup"
