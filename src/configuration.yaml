@@ -15,8 +15,8 @@ lovelace:
       title: Capacity Guardian
       icon: mdi:car-electric
 
-automation: !include_dir_list src/automations
-script: !include_dir_merge_named src/scripts
+automation: !include_dir_list automations
+script: !include_dir_merge_named scripts
 
 # saved snapshots of specific states for multiple devices or entities (like lights, media players, and covers)
 # that allow you to restore a precise configuration all at once
@@ -25,5 +25,5 @@ scene: !include scenes.yaml
 # homeassistant.packages allow a single YAML file to define multiple domains together
 homeassistant:
   packages:
-    # state for the guardian script (but NOT name-spacing!)
-    guardian_state: !include helpers.yaml
+    # state for the guardian script (key is unused)
+    guardian_state: !include helpers/helpers.yaml
