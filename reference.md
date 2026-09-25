@@ -63,3 +63,6 @@ sensor.p1_meter_peak_demand_current_month: n/a
 ## EcoFlow
 
 mbpoll -m tcp -a 1 -t 4 -r 0 -c 10 192.168.0.165
+## Ecoflow PowerOcean
+
+Lots of sensors but no selects (on the cloud API, using ModBus should surface some)

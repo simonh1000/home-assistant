@@ -1,0 +1,33 @@
+
+# message: GFT
+# all_day: true
+# start_time: 2026-10-01 00:00:00
+# end_time: 2026-10-02 00:00:00
+# location: 
+# description: 
+# friendly_name: Rubbish
+# supported_features: 7
+
+template:
+  - sensor:
+      - name: "Next Rubbish Collection"
+        state: >
+          {% set collection = state_attr('calendar.rubbish', 'start_time') %}
+          {{collection}}
+          {% if collection %}
+            {{ as_datetime(collection).strftime('%A, %b %d') }}
+          
+          {% endif %}
+        icon: mdi:recycle
+
+Assume that we use about 1-2kWh during the sunny hours. The battery has a capacity of 5 (but starts x% full). We want the car to take the remainder
+{% set east = states('sensor.energy_production_tomorrow') | float(0) %}
+{% set south = states('sensor.energy_production_tomorrow_2') | float(0) %}
+
+{{ (east + south) | round(0) }} 
+
+
+<b>☀️ Solar:</b> {{ states('sensor.ecoflow_powerocean_solar_power') | int(0) }} W<br>
+<b>🔋 Battery:</b> {{ states('sensor.ecoflow_powerocean_battery_power') | int(0) }} W<br>
+<b>🔌 Grid:</b> {{ states('sensor.p1_meter_power') | int(0) }} W<br>
+<b>🏠 Home:</b> {{ states('sensor.ecoflow_powerocean_home_power') | int(0) }} W

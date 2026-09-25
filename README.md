@@ -96,10 +96,9 @@ Because HA resolves `!include_dir_*` paths relative to its config root, the depl
 
 ## 📝 TODO
 
-- [x] Add `/src` directory
-- [x] **Automate Reload**: Add support for Home Assistant API to automatically trigger `automation.reload` and `script.reload` after deployment. Requires a Long-Lived Access Token stored as `HA_DEPLOY` in `.env`.
-- [x] **Notification when charging complete**
-- [x] **Button to say 'cooking over'**
-
+* [ ] Daily challenge: sum of energy produced - background use during sunny hours - battery capacity
+* [ ] Turn of battery discharge when car charging
+* [ ] Get the car to take up the remaining capacity
+* [ ] Prevent the car consuming energy from the battery (either use enhanced mode and my poersonal password, or modbus)
 * [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
 * [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?
