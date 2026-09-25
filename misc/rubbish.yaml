@@ -20,3 +20,14 @@ template:
           {% endif %}
         icon: mdi:recycle
 
+Assume that we use about 1-2kWh during the sunny hours. The battery has a capacity of 5 (but starts x% full). We want the car to take the remainder
+{% set east = states('sensor.energy_production_tomorrow') | float(0) %}
+{% set south = states('sensor.energy_production_tomorrow_2') | float(0) %}
+
+{{ (east + south) | round(0) }} 
+
+
+<b>☀️ Solar:</b> {{ states('sensor.ecoflow_powerocean_solar_power') | int(0) }} W<br>
+<b>🔋 Battery:</b> {{ states('sensor.ecoflow_powerocean_battery_power') | int(0) }} W<br>
+<b>🔌 Grid:</b> {{ states('sensor.p1_meter_power') | int(0) }} W<br>
+<b>🏠 Home:</b> {{ states('sensor.ecoflow_powerocean_home_power') | int(0) }} W
