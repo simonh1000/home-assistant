@@ -22,8 +22,7 @@ script: !include_dir_merge_named scripts
 # that allow you to restore a precise configuration all at once
 scene: !include scenes.yaml
 
-# homeassistant.packages allow a single YAML file to define multiple domains together
+# homeassistant.packages allow a single YAML file to define multiple domains together.
+# Each file in helpers/ becomes a package named after the file (e.g. guardian.yaml -> "guardian").
 homeassistant:
-  packages:
-    # state for the guardian script (key is unused)
-    guardian_state: !include helpers/helpers.yaml
+  packages: !include_dir_named helpers
