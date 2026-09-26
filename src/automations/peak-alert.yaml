@@ -11,20 +11,8 @@ triggers:
     for:
       minutes: 2
 actions:
-  - action: notify.mobile_app_pixel_10
+  - action: script.notify_both_phones
     data:
       title: "Peak Warning: 6kW Exceeded"
       message: "[{{ now().strftime('%H:%M') }}] House load is currently {{ states('sensor.p1_meter_active_power') }}kW. Average peak risk!"
-      data:
-        priority: high
-        ttl: 0
-        importance: high
-  - action: notify.mobile_app_pixel_8
-    data:
-      title: "Peak Warning: 6kW Exceeded"
-      message: "[{{ now().strftime('%H:%M') }}] House load is currently {{ states('sensor.p1_meter_active_power') }}kW. Average peak risk!"
-      data:
-        priority: high
-        ttl: 0
-        importance: high
 mode: single
