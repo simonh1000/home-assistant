@@ -24,10 +24,8 @@
 
 # Est. Surplus: {{ surplus | round(1) }} kWh
 
-## {{ produced | round(1) }} kWh forecast solar
+## Est production: {{ produced | round(1) }} kWh
 
 Background use estimate: {{ daylight_hours | round(1) }}h daylight × {{ background_load_kw }} kW ≈ {{ background_estimate | round(1) }} kWh
 
-Gross surplus (after background use): {{ gross_surplus | round(1) }} kWh
-
-Battery assumed {{ soc_at_sunrise }}% at sunrise ({{ battery_room_kwh | round(1) }} kWh still to fill)
+Battery assumed {{ soc_at_sunrise }}% at sunrise ({{ battery_room_kwh | round(1) }} kWh available)
