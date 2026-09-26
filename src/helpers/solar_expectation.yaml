@@ -1,0 +1,20 @@
+# ======================================================================
+# Solar Expectation Card
+# ======================================================================
+
+input_number:
+  battery_soc_at_daybreak:
+    name: "Battery SoC at Daybreak"
+    icon: mdi:battery-clock
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+  solar_background_load_kw:
+    name: "Solar Card: Assumed Background Load"
+    icon: mdi:home-lightning-bolt
+    min: 0.05
+    max: 1
+    step: 0.05
+    initial: 0.15
+    unit_of_measurement: "kW"
