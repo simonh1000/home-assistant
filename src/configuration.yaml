@@ -22,6 +22,9 @@ script: !include_dir_merge_named scripts
 # that allow you to restore a precise configuration all at once
 scene: !include scenes.yaml
 
+# ecoflow modbus integration
+modbus: !include modbus/ecoflow.yaml
+
 # homeassistant.packages allow a single YAML file to define multiple domains together.
 # Each file in helpers/ becomes a package named after the file (e.g. guardian.yaml -> "guardian").
 homeassistant:

@@ -18,6 +18,8 @@ SCRIPTS_SOURCE = Path("src/scripts")
 SCRIPTS_DIST = DIST_DIR / "scripts"
 HELPERS_SOURCE = Path("src/helpers")
 HELPERS_DIST = DIST_DIR / "helpers"
+MODBUS_SOURCE = Path("src/modbus")
+MODBUS_DIST = DIST_DIR / "modbus"
 CONFIG_FILE = DIST_DIR / "configuration.yaml"
 CONFIG_SOURCE = Path("src/configuration.yaml")
 DASHBOARD_FILE = DIST_DIR / "ui-lovelace.yaml"
@@ -85,6 +87,7 @@ def combine(version_tag=None):
     a_success = copy_tree(AUTOMATIONS_SOURCE, AUTOMATIONS_DIST)
     s_success = copy_tree(SCRIPTS_SOURCE, SCRIPTS_DIST)
     h_success = copy_tree(HELPERS_SOURCE, HELPERS_DIST)
+    m_success = copy_tree(MODBUS_SOURCE, MODBUS_DIST)
 
     if version_tag:
         with open(DIST_DIR / "version.txt", "w") as f:
@@ -249,6 +252,7 @@ if __name__ == "__main__":
                 AUTOMATIONS_DIST,
                 SCRIPTS_DIST,
                 HELPERS_DIST,
+                MODBUS_DIST,
                 CONFIG_FILE,
                 DASHBOARD_FILE,
                 WWW_DIST

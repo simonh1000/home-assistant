@@ -31,12 +31,12 @@
 
 {% set surplus = [produced - background_estimate - battery_room_kwh, 0] | max %}
 
-# {{ produced | round(1) }} kWh produced today
+# Est Surplus: {{ surplus | round(1) }} kWh
+
+## Est. production: {{ produced | round(1) }} kWh
 
 Battery: {{ soc_now | round(0) }}% now, {{ soc_daybreak | round(0) }}% at daybreak ({{ battery_room_kwh | round(1) }} kWh still to fill)
 
 Background use estimate: {{ daylight_hours | round(1) }}h daylight × {{ background_load_kw }} kW ≈ {{ background_estimate | round(1) }} kWh
-
-## Surplus for car / appliances: {{ surplus | round(1) }} kWh
 
 Assumptions: background load during solar hours is a flat rate (`input_number.solar_background_load_kw`, default 0.15 kW — background.md puts normal background use at 0.1–0.25 kW), not metered directly. Battery capacity is the 5.1 kWh nameplate figure, not a live reading. SoC at daybreak is captured by the `solar_daybreak_snapshot` automation at sunrise.
