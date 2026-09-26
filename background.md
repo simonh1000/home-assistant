@@ -7,13 +7,12 @@ still allowing a roughly 70% overnight top-up when needed. The charger should
 remain fast at public charge points; any home limit belongs at the charger or in
 home control, not in the car.
 
-Charge car during solar hours without emtying the EcoFlow battery
+Charge car during solar hours without emtying the EcoFlow battery. I will probably end up charging the car overnight to get a slightly better rate from an Engie (undocumented) kickback system so I want all charging done via the grid (controlled by the Engie app)
 
 ## What matters
 
 - Fluvius uses the highest **fixed 15-minute average import** in each calendar
-  month. The capacity charge then reflects the rolling average of monthly peaks,
-  subject to a 2.5 kW minimum.
+  month (see section below).
 - Normal background use is about 0.1–0.25 kW. Home EV charging is about
   5.5 kW, so the meaningful risk is a substantial appliance running at the same
   time as the car. A refrigerator or freezer can create a sharp but brief spike and should not
@@ -57,8 +56,8 @@ The intended configuration is:
 - Vehicle charge-current cap: remove the old 8 A cap after the charger setting
   is confirmed, so public AC charging remains fast.
 
-This depends on correctly installed clamps. They must cover all three phases and
-measure **net grid import**. Verify this by switching known loads on across the
+Clamps are installed on the grid connection and cover all three phases (direction
+has not been checked but presumed to be correct). Verify this by switching known loads on across the
 relevant circuits and checking that the clamp reading changes. Correct net-import
 placement also makes the scheme compatible with solar generation.
 
