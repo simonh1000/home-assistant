@@ -1,0 +1,17 @@
+id: solar_daybreak_snapshot
+alias: "Solar: Capture Battery SoC at Daybreak"
+description: >
+  Records the EcoFlow battery's state of charge at sunrise into
+  input_number.battery_soc_at_daybreak, so the solar expectation card can
+  work out how much room the battery still has to fill over the rest of
+  the day.
+triggers:
+  - trigger: sun
+    event: sunrise
+actions:
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.battery_soc_at_daybreak
+    data:
+      value: "{{ states('sensor.ecoflow_powerocean_battery_soc') | float(0) }}"
+mode: single
