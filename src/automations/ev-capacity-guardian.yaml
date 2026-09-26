@@ -1,9 +1,13 @@
 id: ev_capacity_guardian
 alias: "EV: Capacity Guardian"
 description: |
+  DISABLED: keeps firing incorrectly, logic needs rethinking before re-enabling.
+
   Makes the EV yield to sustained house load and reserves the dinner period.
   Requires input_select.ev_guardian_state (idle, yielding, cooldown) and
   input_boolean.ev_cooking_over. Uses sensor.p1_meter_power in Watts.
+# DISABLED: keeps firing incorrectly, logic needs rethinking before re-enabling.
+initial_state: false
 
 variables:
   ohme_state: "{{ states('sensor.ohme_home_pro_delta_11kw_status') }}"
