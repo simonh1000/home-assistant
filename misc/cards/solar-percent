@@ -1,14 +1,35 @@
-type: history-graph
-title: Solar Output (% of Max)
-entities:
-  - entity: sensor.solar_percent_east
+type: custom:apexcharts-card
+# The 07:00-19:00 span below is a fixed clock range, so apexcharts-card's
+# default history cache (keyed on that same range all day) would keep
+# serving the first fetch instead of picking up newer data as time passes.
+cache: false
+header:
+  show: true
+  title: Solar Output (% of Max)
+# Fixed 07:00-19:00 window regardless of when the dashboard is viewed
+# (native history-graph can only do a rolling window ending "now").
+span:
+  start: day
+  offset: +7h
+graph_span: 12h
+yaxis:
+  - min: 0
+    max: 50
+    decimals: 0
+series:
+  - entity: sensor.ecoflow_powerocean_pv_string_2_power
     name: East
-  - entity: sensor.solar_percent_south
+    transform: "return x / 3800 * 100;"
+    extend_to: false
+    curve: smooth
+    group_by:
+      func: avg
+      duration: 5min
+  - entity: sensor.ecoflow_powerocean_pv_string_1_power
     name: South
-# Core history-graph only supports a rolling window ending "now", not a
-# fixed 07:00-19:00 clock window. 12h approximates the 7-and-7 daylight
-# span; production is ~0 outside it anyway, so the shown curve looks the
-# same whether viewed mid-afternoon or in the evening.
-hours_to_show: 12
-refresh_interval: 60
-
+    transform: "return x / 1900 * 100;"
+    extend_to: false
+    curve: smooth
+    group_by:
+      func: avg
+      duration: 5min
