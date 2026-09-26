@@ -1,0 +1,17 @@
+id: battery_full_alert
+alias: "Battery Full Alert: 90%"
+description: >
+  NOTIFICATION ONLY: Sends an alert to both phones when the EcoFlow home
+  battery reaches 90% state of charge, as a reminder to either plug in the
+  car or run some appliances to use up the remaining solar before the
+  battery tops out.
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.ecoflow_powerocean_battery_soc
+    above: 90
+actions:
+  - action: script.notify_both_phones
+    data:
+      title: "Battery 90% Full"
+      message: "[{{ now().strftime('%H:%M') }}] Home battery is at {{ states('sensor.ecoflow_powerocean_battery_soc') }}%. Consider plugging in the car or running an appliance to use the solar."
+mode: single

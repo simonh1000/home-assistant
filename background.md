@@ -176,3 +176,7 @@ Different sources — the car's menu, the Ohme app, electricians, public charge 
 | 12 A                              | 8.28 kW     | ~8.2 h                                   |                                                                                                                                     |
 | 16 A (car's OBC ceiling)          | 11.04 kW    | ~6.2 h                                   | XPeng G6 On-Board Charger maxes out here — more current from the charger or grid buys nothing beyond this                           |
 | 32 A (Ohme's current setting)     | 22.16 kW    | n/a                                      | never reachable — car is hard-capped at 16 A/11 kW by its own OBC, so this setting has given zero protection since the 3F+N upgrade |
+
+### People
+
+Pieter Kees, Zaakvoerder bij L&S Elektro BV
