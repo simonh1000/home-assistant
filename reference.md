@@ -62,4 +62,8 @@ sensor.p1_meter_peak_demand_current_month: n/a
 
 ## Ecoflow PowerOcean
 
+- ModBus: MaxGrmm/EF-PowerOcean-TcpModbus 
+- MQTT/API: https://github.com/shuette42/ecoflow-energy-ha 
+- Most popular but lack PowerOcean: https://github.com/tolwi/hassio-ecoflow-cloud
+
 Lots of sensors but no selects (on the cloud API, using ModBus should surface some)

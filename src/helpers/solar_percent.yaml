@@ -1,0 +1,26 @@
+# ======================================================================
+# Solar % of Max Output
+#
+# Forecast.Solar reports live production in Watts per array (east/south),
+# not as a percentage of installed capacity. These convert each array's
+# live output to % of its declared peak so they can be charted directly
+# (history-graph needs plain entities — it can't evaluate templates/math
+# inline the way the old misc/cards/solar-percent snippet tried to).
+# ======================================================================
+
+template:
+  - sensor:
+      - name: "Solar Percent East"
+        unique_id: solar_percent_east
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:solar-power-variant
+        state: >
+          {{ (states('sensor.power_production_now') | float(0) / 3800 * 100) | round(1) }}
+      - name: "Solar Percent South"
+        unique_id: solar_percent_south
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:solar-power-variant
+        state: >
+          {{ (states('sensor.power_production_now_2') | float(0) / 1900 * 100) | round(1) }}

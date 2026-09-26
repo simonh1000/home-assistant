@@ -1,0 +1,14 @@
+type: history-graph
+title: Solar Output (% of Max)
+entities:
+  - entity: sensor.solar_percent_east
+    name: East
+  - entity: sensor.solar_percent_south
+    name: South
+# Core history-graph only supports a rolling window ending "now", not a
+# fixed 07:00-19:00 clock window. 12h approximates the 7-and-7 daylight
+# span; production is ~0 outside it anyway, so the shown curve looks the
+# same whether viewed mid-afternoon or in the evening.
+hours_to_show: 12
+refresh_interval: 60
+
