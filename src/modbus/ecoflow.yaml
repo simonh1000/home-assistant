@@ -1,4 +1,9 @@
 # Inside /modbus/ecoflow.yaml
+#
+# Register addresses below come from EcoFlow Open Modbus Protocol V1.0
+# (misc/EcoFlow_Open_Modbus_Protocol.pdf), "System Basic Capability Area" table.
+# Requires "Modbus control" mode to be enabled for this inverter in the
+# EcoFlow Pro app — otherwise every register read returns Illegal Data Address.
 
 - name: ecoflow_powerocean
   type: tcp
@@ -9,44 +14,80 @@
   retries: 3
 
   sensors:
-    # Battery State of Charge (%)
+    # System State of Charge (%) — 0x020E, UINT16, range 0-100
     - name: "EcoFlow Battery SOC"
       slave: 1
-      address: 576
+      address: 526
       input_type: holding
-      data_type: float32
-      swap: word
-      scale: 1.0
-      precision: 1
+      data_type: uint16
       device_class: battery
       state_class: measurement
 
-    # Grid Power (Watts: + Import / - Export)
+    # Current Grid Power (Watts: + Import / - Export) — 0x0208, FLOAT32
     - name: "EcoFlow Grid Power"
       slave: 1
-      address: 596
+      address: 520
       input_type: holding
       data_type: float32
       swap: word
       device_class: power
       state_class: measurement
 
-    # Battery Power (Watts: + Charging / - Discharging)
+    # Current Total Battery Power (Watts: + Charging / - Discharging) — 0x020C, FLOAT32
     - name: "EcoFlow Battery Power"
       slave: 1
-      address: 586
+      address: 524
       input_type: holding
       data_type: float32
       swap: word
       device_class: power
       state_class: measurement
 
-    # Solar Production (Watts)
+    # Current Total Solar Power (Watts) — 0x020A, FLOAT32
     - name: "EcoFlow Solar Power"
       slave: 1
-      address: 566
+      address: 522
       input_type: holding
       data_type: float32
       swap: word
       device_class: power
       state_class: measurement
+
+  # --- Writable registers ---
+  # HA's modbus integration has no `number:`/`select:` YAML platform (checked
+  # homeassistant/components/modbus/ in home-assistant/core — only sensor,
+  # binary_sensor, switch, cover, climate, fan, light exist). Arbitrary
+  # numeric/enum writes like these have to go through the `modbus.write_register`
+  # service (from an automation, script, or Developer Tools > Actions), e.g.:
+  #
+  #   action: modbus.write_register
+  #   data:
+  #     hub: ecoflow_powerocean
+  #     slave: 1
+  #     address: 570        # decimal register address, NOT the 0x... form
+  #     value: 6000          # UINT16; for INT32/FLOAT32 pass a 2-item list of
+  #                          # 16-bit words in the same word order as `swap: word` above
+  #
+  # Writable registers relevant to this project (per protocol doc):
+  #   - Backup Power Ratio            0x0217 / 535   UINT16 %   RW  [0-100]
+  #   - Device Indicator Brightness   0x021C / 540   UINT16 %   RW  [0-100]
+  #   - System Working Mode Setting   0x022D / 557   UINT16 /   RW  1=Self-consumption, 2=AI mode
+  #   - System Power Draw/Feed        0x021D / 541   INT32  W   RW  +draw/-feed, needs Control Method=1
+  #   - Inverter Power Draw/Feed      0x021F / 543   INT32  W   RW  +draw/-feed, needs Control Method=2
+  #   - Battery Charge/Discharge      0x023A / 570   INT32  W   RW  +charge/-discharge, needs Control Method=3
+  #
+  # Two prerequisites before the three power-setpoint registers do anything:
+  #   1. Control Method (bits 4-7 of System Control Command, 0x0215/533,
+  #      UINT32, write-only bitfield) must first be set to match — 1/2/3 as
+  #      above. Not broken out individually above since it's a multi-bit field
+  #      alongside other flags (off-grid, shutdown, power-saving); write the
+  #      whole 32-bit word with the right bits set via modbus.write_register.
+  #   2. Heartbeat Signal (0x025F / 607, UINT16, write-only) must be written
+  #      with value 1 at least once every 60 seconds while in Modbus control
+  #      mode, or the inverter stops honouring any active command.
+  #
+  # See src/automations/ecoflow-battery-lock.yaml + ecoflow-battery-unlock.yaml
+  # and src/scripts/ecoflow_lock_battery.yaml + ecoflow_unlock_battery.yaml —
+  # these use Control Method=3 (battery) + Battery Charge/Discharge=0 to pin
+  # the battery at rest (no charge, no discharge) for the duration of EV
+  # charging, so the car pulls only from solar/grid.
