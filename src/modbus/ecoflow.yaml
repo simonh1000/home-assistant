@@ -1,9 +1,6 @@
 # Inside /modbus/ecoflow.yaml
 #
-# Register addresses below come from EcoFlow Open Modbus Protocol V1.0
-# (misc/EcoFlow_Open_Modbus_Protocol.pdf), "System Basic Capability Area" table.
-# Requires "Modbus control" mode to be enabled for this inverter in the
-# EcoFlow Pro app — otherwise every register read returns Illegal Data Address.
+# USE MaxGrmm/EF-PowerOcean-TcpModbus INSTEAD OF THIS FILE IF POSSIBLE
 
 - name: ecoflow_powerocean
   type: tcp
@@ -66,7 +63,23 @@
   #     slave: 1
   #     address: 570        # decimal register address, NOT the 0x... form
   #     value: 6000          # UINT16; for INT32/FLOAT32 pass a 2-item list of
-  #                          # 16-bit words in the same word order as `swap: word` above
+  #                          # 16-bit words — HIGH WORD FIRST (see note below,
+  #                          # this is the OPPOSITE order from `swap: word` reads)
+  #
+  # WRITE WORD ORDER WARNING: reads and writes do not use the same word order.
+  # This project's own official protocol doc only gives one example ("0x12345678
+  # -> Modbus format 56781234") without saying whether it covers writes, and a
+  # community integration (github.com/MaxGrmm/EF-PowerOcean-TcpModbus) that
+  # empirically tested this against a real PowerOcean Plus found reads are
+  # low-word-first but writes must be HIGH-word-first — sending a 32-bit write
+  # in read order isn't rejected, it's silently interpreted as value << 16 (i.e.
+  # up to 65536x too large). Their register addresses for Control Command (533)
+  # and Battery Charge/Discharge Setting (570) independently match the ones
+  # derived from our own protocol doc, which is good corroboration, but our own
+  # writes were originally coded in the wrong (read/swap) word order before this
+  # was caught — see git history on ecoflow_lock_battery.yaml. Any new writable
+  # register added here should use high-word-first, and should be sanity-checked
+  # against that project's `const.py`/`EcoFlow_PowerOcean_Modbus.md` where possible.
   #
   # Writable registers relevant to this project (per protocol doc):
   #   - Backup Power Ratio            0x0217 / 535   UINT16 %   RW  [0-100]

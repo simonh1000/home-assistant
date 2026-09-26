@@ -6,7 +6,7 @@ ecoflow_lock_battery:
         hub: ecoflow_powerocean
         slave: 1
         address: 533 # 0x0215 System Control Command — Control Method (bits 4-7) = 3 (battery-based)
-        value: [48, 0] # word-swapped UINT32 for 0x00000030
+        value: [0, 48] # HIGH word first for writes (opposite of read order — see ecoflow.yaml comment)
     - action: modbus.write_register
       data:
         hub: ecoflow_powerocean
