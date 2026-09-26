@@ -1,0 +1,30 @@
+ecoflow_lock_battery:
+  alias: "EcoFlow: Lock Battery (Car Charging)"
+  sequence:
+    - action: modbus.write_register
+      data:
+        hub: ecoflow_powerocean
+        slave: 1
+        address: 533 # 0x0215 System Control Command — Control Method (bits 4-7) = 3 (battery-based)
+        value: [48, 0] # word-swapped UINT32 for 0x00000030
+    - action: modbus.write_register
+      data:
+        hub: ecoflow_powerocean
+        slave: 1
+        address: 570 # 0x023A Battery Charge/Discharge Setting — 0 W (neither charge nor discharge)
+        value: [0, 0]
+    - repeat:
+        while:
+          - condition: state
+            entity_id: sensor.ohme_home_pro_delta_11kw_status
+            state: "charging"
+        sequence:
+          - action: modbus.write_register
+            data:
+              hub: ecoflow_powerocean
+              slave: 1
+              address: 607 # 0x025F Heartbeat Signal — must be sent at least every 60s or the inverter drops the override
+              value: 1
+          - delay:
+              seconds: 45
+  mode: restart

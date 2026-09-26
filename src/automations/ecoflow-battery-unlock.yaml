@@ -1,0 +1,13 @@
+id: ecoflow_battery_unlock
+alias: "EcoFlow: Battery Unlock on EV Charge Stop"
+description: |
+  Releases the EcoFlow battery back to normal self-consumption control once
+  the car stops charging (paused, finished, unplugged, etc).
+triggers:
+  - trigger: state
+    entity_id: sensor.ohme_home_pro_delta_11kw_status
+    from: "charging"
+conditions: []
+actions:
+  - action: script.ecoflow_unlock_battery
+mode: single
