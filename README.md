@@ -97,8 +97,8 @@ Because HA resolves `!include_dir_*` paths relative to its config root, the depl
 ## 📝 TODO
 
 * [ ] Daily challenge: sum of energy produced - background use during sunny hours - battery capacity
-* [ ] Turn of battery discharge when car charging
+* [ ] Turn of battery discharge when car charging — drafted via Modbus (`ecoflow-battery-lock.yaml`/`ecoflow-battery-unlock.yaml`), untested pending installer confirming Modbus control mode
+  * [ ] Prevent the car consuming energy from the battery (either use enhanced mode and my poersonal password, or modbus) — see above, drafted not tested
 * [ ] Get the car to take up the remaining capacity
-* [ ] Prevent the car consuming energy from the battery (either use enhanced mode and my poersonal password, or modbus)
 * [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
 * [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?
