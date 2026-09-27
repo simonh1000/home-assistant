@@ -19,6 +19,8 @@ yaxis:
 series:
   - entity: sensor.ecoflow_powerocean_pv_string_2_power
     name: East
+    unit: "%"
+    float_precision: 0
     transform: "return x / 3800 * 100;"
     extend_to: false
     curve: smooth
@@ -27,6 +29,8 @@ series:
       duration: 5min
   - entity: sensor.ecoflow_powerocean_pv_string_1_power
     name: South
+    unit: "%"
+    float_precision: 0
     transform: "return x / 1900 * 100;"
     extend_to: false
     curve: smooth
