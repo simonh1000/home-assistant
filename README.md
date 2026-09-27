@@ -113,29 +113,3 @@ Because HA resolves `!include_dir_*` paths relative to its config root, the depl
 * [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
 * [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?
 * [ ] Follow up with installer — EcoFlow Modbus returns "Illegal Data Address" on every register despite him saying he'd enabled it
-
-### 📱 Installer follow-up (EcoFlow Modbus)
-
-**Confirmed working:** Step 1 (network/cable) is done — port 502 on 192.168.0.165 is open, accepts connections, and the inverter responds with valid Modbus TCP frames. **Not confirmed:** Step 2 — every register read (any address, function code 03 or 04) comes back "Illegal Data Address", including the most basic one (Protocol Version), which points at Modbus control mode not being active in the EcoFlow Pro app.
-
-**SMS to send (NL):**
-
-> Hoi, met Simon. De Modbus-poort van de EcoFlow staat open en de verbinding werkt, maar hij geeft op elk register "Illegal Data Address" terug — lijkt erop dat Modbus-besturing zelf niet actief staat in de EcoFlow Pro app. Zou je kunnen checken of die nog aanstaat voor deze omvormer? Bedankt, bel gerust terug wanneer het past!
-
-**If he calls back — talking points:**
-
-NL:
-- Staat "Modbus control mode" nog actief aan voor deze omvormer in de EcoFlow Pro app? (Kan uitgeschakeld zijn, of teruggevallen naar normale modus.)
-- Welk exact model is het (PowerOcean single-phase / three-phase / Plus, of OCEAN2)? Het register-overzicht verschilt per model.
-- Welke firmwareversie draait erop?
-- Moet er om de 60 seconden een "heartbeat"-signaal teruggestuurd worden, en beïnvloedt dat ook het uitlezen van data, of enkel het aansturen/schrijven?
-- Is er nog een andere app of tool tegelijk via Modbus verbonden op hetzelfde toestel? (mogelijk conflict)
-- Welk slave/unit-ID gebruikt hij? (wij gaan momenteel uit van 1)
-
-EN:
-- Is "Modbus control mode" still switched on for this inverter in the EcoFlow Pro app? (It may have been disabled, or reverted to normal mode.)
-- Exact model of the device (PowerOcean single-phase / three-phase / Plus, or OCEAN2)? The register map differs by model.
-- What firmware version is it running?
-- Does a "heartbeat" signal need to be sent back every 60 seconds, and does that gate reads too, or only writes/control?
-- Is any other app or tool connected via Modbus to the same device at the same time? (possible conflict)
-- What slave/unit ID is configured? (we're currently assuming 1)
