@@ -1,0 +1,17 @@
+# ======================================================================
+# Daily Solar Production
+#
+# sensor.ecoflow_powerocean_solar_energy is already a live, cumulative
+# (state_class: total_increasing) kWh sensor combining both PV strings.
+#
+# https://www.home-assistant.io/integrations/utility_meter/
+# consumed by misc/cards/solar-today.md.jinja's "Production:" line.
+#
+# NOTE: needed restart when first added
+# ======================================================================
+
+utility_meter:
+  daily_solar_production:
+    source: sensor.ecoflow_powerocean_solar_energy
+    name: "Daily Solar Production"
+    cycle: daily
