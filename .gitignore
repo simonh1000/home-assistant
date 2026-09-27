@@ -7,6 +7,8 @@ __pycache__
 .pytest_cache
 .venv
 *.pyc
+*.pdf
 dist
 
 ignore
+background.md
