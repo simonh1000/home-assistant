@@ -17,7 +17,7 @@ yaxis:
     max: 50
     decimals: 0
 series:
-  - entity: sensor.ecoflow_powerocean_pv_string_2_power_2
+  - entity: sensor.ecoflow_powerocean_pv_string_2_power
     name: East
     unit: "%"
     float_precision: 0
@@ -27,7 +27,7 @@ series:
     group_by:
       func: avg
       duration: 5min
-  - entity: sensor.ecoflow_powerocean_pv_string_1_power_2
+  - entity: sensor.ecoflow_powerocean_pv_string_1_power
     name: South
     unit: "%"
     float_precision: 0

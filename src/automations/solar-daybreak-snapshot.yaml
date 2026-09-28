@@ -13,5 +13,5 @@ actions:
     target:
       entity_id: input_number.battery_soc_at_daybreak
     data:
-      value: "{{ states('sensor.ecoflow_powerocean_battery_soc_2') | float(0) }}"
+      value: "{{ states('sensor.ecoflow_powerocean_battery_soc') | float(0) }}"
 mode: single
