@@ -7,11 +7,11 @@ description: >
   battery tops out.
 triggers:
   - trigger: numeric_state
-    entity_id: sensor.ecoflow_powerocean_battery_soc
+    entity_id: sensor.ecoflow_powerocean_battery_soc_2
     above: 90
 actions:
   - action: script.notify_both_phones
     data:
       title: "Battery 90% Full"
-      message: "[{{ now().strftime('%H:%M') }}] Home battery is at {{ states('sensor.ecoflow_powerocean_battery_soc') }}%. Consider plugging in the car or running an appliance to use the solar."
+      message: "[{{ now().strftime('%H:%M') }}] Home battery is at {{ states('sensor.ecoflow_powerocean_battery_soc_2') }}%. Consider plugging in the car or running an appliance to use the solar."
 mode: single

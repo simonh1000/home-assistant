@@ -62,9 +62,167 @@ sensor.p1_meter_peak_demand_current_month: n/a
 
 ## Ecoflow PowerOcean 
 
-- ModBus: MaxGrmm/EF-PowerOcean-TcpModbus 
+- ModBus: https://github.com/MaxGrmm/EF-PowerOcean-TcpModbus
 - MQTT/API: https://github.com/shuette42/ecoflow-energy-ha 
 - Most popular but lack PowerOcean: https://github.com/tolwi/hassio-ecoflow-cloud
+
+### ModBus
+
+- Wire addresses are the protocol doc's hex offset + 40001 (e.g. SOC is 0x020E = 526 in the doc, but 40527 on the wire) — confirmed against MaxGrmm/EF-PowerOcean-TcpModbus's const.py, whose registers (grid_power=40521, battery_power=40525, battery_soc=40527, heartbeat=40608, control_command=40534, ...) all match offset+40001 exactly.
+
+binary_sensor.ecoflow_powerocean_intelligent_mode: off 
+
+binary_sensor.ecoflow_powerocean_modbus_control: off 
+
+binary_sensor.ecoflow_powerocean_self_powered_mode: on 
+
+binary_sensor.ecoflow_powerocean_system_fault: off 
+
+binary_sensor.ecoflow_powerocean_system_powered_on: on 
+
+number.ecoflow_powerocean_battery_reserve: unavailable %
+
+number.ecoflow_powerocean_charge_limit: unavailable %
+
+number.ecoflow_powerocean_charge_power: unavailable W
+
+number.ecoflow_powerocean_discharge_power: unavailable W
+
+number.ecoflow_powerocean_export_power: unavailable W
+
+number.ecoflow_powerocean_led_brightness: 100.0 %
+
+number.ecoflow_powerocean_minimum_soc_limit: 0.0 %
+
+select.ecoflow_powerocean_battery_mode: unavailable 
+
+sensor.ecoflow_powerocean_active_fault_codes: none 
+
+sensor.ecoflow_powerocean_active_fault_count: 0 
+
+sensor.ecoflow_powerocean_available_battery_charge_power: 2499 W
+
+sensor.ecoflow_powerocean_available_battery_discharge_power: 3298 W
+
+sensor.ecoflow_powerocean_battery_1_soc: 12 %
+
+sensor.ecoflow_powerocean_battery_charged_today: 1.66 kWh
+
+sensor.ecoflow_powerocean_battery_charged_today_device: 1.66 kWh
+
+sensor.ecoflow_powerocean_battery_charged_total: 16.42 kWh
+
+sensor.ecoflow_powerocean_battery_current_2: 1.11 A
+
+sensor.ecoflow_powerocean_battery_discharged_today: 0.65 kWh
+
+sensor.ecoflow_powerocean_battery_discharged_today_device: 0.65 kWh
+
+sensor.ecoflow_powerocean_battery_discharged_total: 16.72 kWh
+
+sensor.ecoflow_powerocean_battery_energy_loss: -0.3 kWh
+
+sensor.ecoflow_powerocean_battery_module_count: 1 
+
+sensor.ecoflow_powerocean_battery_nominal_capacity: 5000 Wh
+
+sensor.ecoflow_powerocean_battery_power_2: 61 W
+
+sensor.ecoflow_powerocean_battery_power_setpoint: 0 W
+
+sensor.ecoflow_powerocean_battery_remaining_energy: 0.6 kWh
+
+sensor.ecoflow_powerocean_battery_soc_2: 12 %
+
+sensor.ecoflow_powerocean_battery_temperature: 30.0 °C
+
+sensor.ecoflow_powerocean_battery_voltage_2: 52.1 V
+
+sensor.ecoflow_powerocean_control_status: no_modbus_control 
+
+sensor.ecoflow_powerocean_coordinator_status: success 
+
+sensor.ecoflow_powerocean_grid_current_l1: 0.78 A
+
+sensor.ecoflow_powerocean_grid_current_l2: 0.81 A
+
+sensor.ecoflow_powerocean_grid_current_l3: 0.87 A
+
+sensor.ecoflow_powerocean_grid_export_today: 0.07 kWh
+
+sensor.ecoflow_powerocean_grid_export_today_device: 0.06 kWh
+
+sensor.ecoflow_powerocean_grid_export_total: 0.51 kWh
+
+sensor.ecoflow_powerocean_grid_frequency_2: 50.0 Hz
+
+sensor.ecoflow_powerocean_grid_import_today: 2.24 kWh
+
+sensor.ecoflow_powerocean_grid_import_today_device: 2.24 kWh
+
+sensor.ecoflow_powerocean_grid_import_total: 69.38 kWh
+
+sensor.ecoflow_powerocean_grid_mode: grid 
+
+sensor.ecoflow_powerocean_grid_power_2: -2 W
+
+sensor.ecoflow_powerocean_grid_voltage_l1: 234.5 V
+
+sensor.ecoflow_powerocean_grid_voltage_l2: 236.1 V
+
+sensor.ecoflow_powerocean_grid_voltage_l3: 235.3 V
+
+sensor.ecoflow_powerocean_house_consumption_today: 5.04 kWh
+
+sensor.ecoflow_powerocean_house_consumption_total: 104.61 kWh
+
+sensor.ecoflow_powerocean_house_power: 273 W
+
+sensor.ecoflow_powerocean_inverter_power_setpoint: 0 W
+
+sensor.ecoflow_powerocean_inverter_rated_power: 6000 W
+
+sensor.ecoflow_powerocean_inverter_temperature: 30.3 °C
+
+sensor.ecoflow_powerocean_maximum_feed_in_power: 6000 W
+
+sensor.ecoflow_powerocean_maximum_inverter_power_dc_to_ac: 6000 W
+
+sensor.ecoflow_powerocean_maximum_rectifier_power_ac_to_dc: 6000 W
+
+sensor.ecoflow_powerocean_operating_mode: self_consumption 
+
+sensor.ecoflow_powerocean_pv_string_1_current_2: 0.02 A
+
+sensor.ecoflow_powerocean_pv_string_1_power_2: 0 W
+
+sensor.ecoflow_powerocean_pv_string_1_voltage_2: 75.3 V
+
+sensor.ecoflow_powerocean_pv_string_2_current_2: 1.69 A
+
+sensor.ecoflow_powerocean_pv_string_2_power_2: 337 W
+
+sensor.ecoflow_powerocean_pv_string_2_voltage_2: 199.9 V
+
+sensor.ecoflow_powerocean_pv_string_3_current_2: 0.0 A
+
+sensor.ecoflow_powerocean_pv_string_3_power_2: 0 W
+
+sensor.ecoflow_powerocean_pv_string_3_voltage_2: 0.0 V
+
+sensor.ecoflow_powerocean_solar_power_2: 337 W
+
+sensor.ecoflow_powerocean_solar_yield_today: 3.88 kWh
+
+sensor.ecoflow_powerocean_solar_yield_today_device: 3.88 kWh
+
+sensor.ecoflow_powerocean_solar_yield_total: 35.44 kWh
+
+sensor.ecoflow_powerocean_system_modes: 4116 
+
+sensor.ecoflow_powerocean_system_power_setpoint: 0 W
+
+switch.ecoflow_powerocean_battery_saver_mode: off
 
 ### API values
 
@@ -161,5 +319,7 @@ sensor.ecoflow_powerocean_pack_1_voltage: 53.5 V
 sensor.ecoflow_powerocean_pack_1_current: -0.0 A
 
 sensor.ecoflow_powerocean_pack_1_remaining_capacity: 4915 Wh
+
+mbpoll -m tcp -a 1 -t 4 -r 0 -c 10 192.168.0.165
 
 Lots of sensors but no selects (on the cloud API, using ModBus should surface some)
