@@ -32,7 +32,7 @@
 
 {% set surplus = [forecast_total - background_estimate - battery_room_kwh, 0] | max %}
 
-# Est Surplus: {{ surplus | round(1) }} kWh¸
+# Est Surplus: {{ surplus | round(1) }} kWh
 
 ## Production: {{ states('sensor.daily_solar_production') | float(0) | round(1) }} kWh (fcast {{ forecast_total | round(1) }} kWh)
 
