@@ -5,13 +5,13 @@ ecoflow_lock_battery:
       data:
         hub: ecoflow_powerocean
         slave: 1
-        address: 533 # 0x0215 System Control Command — Control Method (bits 4-7) = 3 (battery-based)
+        address: 40534 # 0x0215 System Control Command — Control Method (bits 4-7) = 3 (battery-based)
         value: [0, 48] # HIGH word first for writes (opposite of read order — see ecoflow.yaml comment)
     - action: modbus.write_register
       data:
         hub: ecoflow_powerocean
         slave: 1
-        address: 570 # 0x023A Battery Charge/Discharge Setting — 0 W (neither charge nor discharge)
+        address: 40571 # 0x023A Battery Charge/Discharge Setting — 0 W (neither charge nor discharge)
         value: [0, 0]
     - repeat:
         while:
@@ -23,7 +23,7 @@ ecoflow_lock_battery:
             data:
               hub: ecoflow_powerocean
               slave: 1
-              address: 607 # 0x025F Heartbeat Signal — must be sent at least every 60s or the inverter drops the override
+              address: 40608 # 0x025F Heartbeat Signal — must be sent at least every 60s or the inverter drops the override
               value: 1
           - delay:
               seconds: 45

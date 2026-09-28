@@ -10,11 +10,18 @@
   delay: 1
   retries: 3
 
+  # ADDRESSING: every address below is the protocol doc's hex offset + 40001
+  # (e.g. SOC is 0x020E = 526 in the doc, but 40527 on the wire). Confirmed by
+  # reading const.py from MaxGrmm/EF-PowerOcean-TcpModbus after it successfully
+  # read our inverter: its registers (grid_power=40521, battery_power=40525,
+  # battery_soc=40527, control_command=40534, battery_power_setpoint=40571,
+  # heartbeat=40608, ...) all match offset+40001 exactly. Plain offsets (as
+  # used here before) get "Illegal Data Address" on every register.
   sensors:
     # System State of Charge (%) — 0x020E, UINT16, range 0-100
     - name: "EcoFlow Battery SOC"
       slave: 1
-      address: 526
+      address: 40527
       input_type: holding
       data_type: uint16
       device_class: battery
@@ -23,7 +30,7 @@
     # Current Grid Power (Watts: + Import / - Export) — 0x0208, FLOAT32
     - name: "EcoFlow Grid Power"
       slave: 1
-      address: 520
+      address: 40521
       input_type: holding
       data_type: float32
       swap: word
@@ -33,7 +40,7 @@
     # Current Total Battery Power (Watts: + Charging / - Discharging) — 0x020C, FLOAT32
     - name: "EcoFlow Battery Power"
       slave: 1
-      address: 524
+      address: 40525
       input_type: holding
       data_type: float32
       swap: word
@@ -43,7 +50,7 @@
     # Current Total Solar Power (Watts) — 0x020A, FLOAT32
     - name: "EcoFlow Solar Power"
       slave: 1
-      address: 522
+      address: 40523
       input_type: holding
       data_type: float32
       swap: word
@@ -61,7 +68,7 @@
   #   data:
   #     hub: ecoflow_powerocean
   #     slave: 1
-  #     address: 570        # decimal register address, NOT the 0x... form
+  #     address: 40571       # decimal register address (doc offset + 40001), NOT the 0x... form
   #     value: 6000          # UINT16; for INT32/FLOAT32 pass a 2-item list of
   #                          # 16-bit words — HIGH WORD FIRST (see note below,
   #                          # this is the OPPOSITE order from `swap: word` reads)
@@ -73,31 +80,32 @@
   # empirically tested this against a real PowerOcean Plus found reads are
   # low-word-first but writes must be HIGH-word-first — sending a 32-bit write
   # in read order isn't rejected, it's silently interpreted as value << 16 (i.e.
-  # up to 65536x too large). Their register addresses for Control Command (533)
-  # and Battery Charge/Discharge Setting (570) independently match the ones
-  # derived from our own protocol doc, which is good corroboration, but our own
-  # writes were originally coded in the wrong (read/swap) word order before this
-  # was caught — see git history on ecoflow_lock_battery.yaml. Any new writable
-  # register added here should use high-word-first, and should be sanity-checked
-  # against that project's `const.py`/`EcoFlow_PowerOcean_Modbus.md` where possible.
+  # up to 65536x too large). Their register addresses for Control Command
+  # (40534) and Battery Charge/Discharge Setting (40571) confirmed the ADDRESSING
+  # note above (doc offset + 40001) — our own reads/writes were originally coded
+  # against the bare doc offset (533, 570, ...) without that +40001, which is why
+  # every register came back "Illegal Data Address" until this was caught — see
+  # git history on ecoflow_lock_battery.yaml. Any new writable register added
+  # here should use high-word-first, and should be sanity-checked against that
+  # project's `const.py`/`EcoFlow_PowerOcean_Modbus.md` where possible.
   #
-  # Writable registers relevant to this project (per protocol doc):
-  #   - Backup Power Ratio            0x0217 / 535   UINT16 %   RW  [0-100]
-  #   - Device Indicator Brightness   0x021C / 540   UINT16 %   RW  [0-100]
-  #   - System Working Mode Setting   0x022D / 557   UINT16 /   RW  1=Self-consumption, 2=AI mode
-  #   - System Power Draw/Feed        0x021D / 541   INT32  W   RW  +draw/-feed, needs Control Method=1
-  #   - Inverter Power Draw/Feed      0x021F / 543   INT32  W   RW  +draw/-feed, needs Control Method=2
-  #   - Battery Charge/Discharge      0x023A / 570   INT32  W   RW  +charge/-discharge, needs Control Method=3
+  # Writable registers relevant to this project (per protocol doc, wire address = offset + 40001):
+  #   - Backup Power Ratio            0x0217 / 535   -> 40536   UINT16 %   RW  [0-100]
+  #   - Device Indicator Brightness   0x021C / 540   -> 40541   UINT16 %   RW  [0-100]
+  #   - System Working Mode Setting   0x022D / 557   -> 40558   UINT16 /   RW  1=Self-consumption, 2=AI mode
+  #   - System Power Draw/Feed        0x021D / 541   -> 40542   INT32  W   RW  +draw/-feed, needs Control Method=1
+  #   - Inverter Power Draw/Feed      0x021F / 543   -> 40544   INT32  W   RW  +draw/-feed, needs Control Method=2
+  #   - Battery Charge/Discharge      0x023A / 570   -> 40571   INT32  W   RW  +charge/-discharge, needs Control Method=3
   #
   # Two prerequisites before the three power-setpoint registers do anything:
-  #   1. Control Method (bits 4-7 of System Control Command, 0x0215/533,
+  #   1. Control Method (bits 4-7 of System Control Command, 0x0215/533 -> 40534,
   #      UINT32, write-only bitfield) must first be set to match — 1/2/3 as
   #      above. Not broken out individually above since it's a multi-bit field
   #      alongside other flags (off-grid, shutdown, power-saving); write the
   #      whole 32-bit word with the right bits set via modbus.write_register.
-  #   2. Heartbeat Signal (0x025F / 607, UINT16, write-only) must be written
-  #      with value 1 at least once every 60 seconds while in Modbus control
-  #      mode, or the inverter stops honouring any active command.
+  #   2. Heartbeat Signal (0x025F / 607 -> 40608, UINT16, write-only) must be
+  #      written with value 1 at least once every 60 seconds while in Modbus
+  #      control mode, or the inverter stops honouring any active command.
   #
   # See src/automations/ecoflow-battery-lock.yaml + ecoflow-battery-unlock.yaml
   # and src/scripts/ecoflow_lock_battery.yaml + ecoflow_unlock_battery.yaml —

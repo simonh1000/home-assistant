@@ -22,9 +22,13 @@ def read_holding(address, count, data_type, name, word_order='big'):
     return val
 
 
-read_holding(526, 1, ModbusClientMixin.DATATYPE.UINT16, 'Battery SOC (%)')
-read_holding(520, 2, ModbusClientMixin.DATATYPE.FLOAT32, 'Grid Power (W)', word_order='little')
-read_holding(524, 2, ModbusClientMixin.DATATYPE.FLOAT32, 'Battery Power (W)', word_order='little')
-read_holding(522, 2, ModbusClientMixin.DATATYPE.FLOAT32, 'Solar Power (W)', word_order='little')
+# Wire addresses are the protocol doc's hex offset + 40001 (e.g. SOC is 0x020E =
+# 526 in the doc, but 40527 on the wire) — confirmed against MaxGrmm/EF-PowerOcean-TcpModbus's
+# const.py, whose registers (grid_power=40521, battery_power=40525, battery_soc=40527,
+# heartbeat=40608, control_command=40534, ...) all match offset+40001 exactly.
+read_holding(40527, 1, ModbusClientMixin.DATATYPE.UINT16, 'Battery SOC (%)')
+read_holding(40521, 2, ModbusClientMixin.DATATYPE.FLOAT32, 'Grid Power (W)', word_order='little')
+read_holding(40525, 2, ModbusClientMixin.DATATYPE.FLOAT32, 'Battery Power (W)', word_order='little')
+read_holding(40523, 2, ModbusClientMixin.DATATYPE.FLOAT32, 'Solar Power (W)', word_order='little')
 
 client.close()

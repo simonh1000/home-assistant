@@ -5,6 +5,6 @@ ecoflow_unlock_battery:
       data:
         hub: ecoflow_powerocean
         slave: 1
-        address: 533 # 0x0215 System Control Command — Control Method back to 0 (default/self-consumption)
+        address: 40534 # 0x0215 System Control Command — Control Method back to 0 (default/self-consumption)
         value: [0, 0]
   mode: single

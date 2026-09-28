@@ -62,9 +62,14 @@ sensor.p1_meter_peak_demand_current_month: n/a
 
 ## Ecoflow PowerOcean 
 
-- ModBus: MaxGrmm/EF-PowerOcean-TcpModbus 
+- ModBus: https://github.com/MaxGrmm/EF-PowerOcean-TcpModbus
 - MQTT/API: https://github.com/shuette42/ecoflow-energy-ha 
 - Most popular but lack PowerOcean: https://github.com/tolwi/hassio-ecoflow-cloud
+
+### ModBus
+
+- Wire addresses are the protocol doc's hex offset + 40001 (e.g. SOC is 0x020E = 526 in the doc, but 40527 on the wire) — confirmed against MaxGrmm/EF-PowerOcean-TcpModbus's const.py, whose registers (grid_power=40521, battery_power=40525, battery_soc=40527, heartbeat=40608, control_command=40534, ...) all match offset+40001 exactly.
+
 
 ### API values
 
