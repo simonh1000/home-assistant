@@ -34,6 +34,7 @@
 
 # Est Surplus: {{ surplus | round(1) }} kWh¸
 
+
 ## Production: {{ states('sensor.daily_solar_production') | float(0) | round(1) }} kWh (fcast {{ forecast_total | round(1) }} kWh)
 
 **Battery: {{ battery_room_kwh | round(1) }} kWh** ({{ soc_now | round(0) }}% now, {{ soc_daybreak | round(0) }}% at daybreak)
