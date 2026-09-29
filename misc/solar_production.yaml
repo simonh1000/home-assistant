@@ -12,6 +12,6 @@
 
 utility_meter:
   daily_solar_production:
-    source: sensor.ecoflow_powerocean_solar_energy
+    source: sensor.ecoflow_powerocean_solar_yield_today
     name: "Daily Solar Production"
     cycle: daily

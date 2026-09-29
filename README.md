@@ -105,11 +105,11 @@ Because HA resolves `!include_dir_*` paths relative to its config root, the depl
 
 ## 📝 TODO
 
-* [ ] Get more regular battery updates
-* [ ] Daily challenge: sum of energy produced - background use during sunny hours - battery capacity
+* [x] Daily challenge: sum of energy produced - background use during sunny hours - battery capacity
+  * [x] Update surplus prediction throughout the day
+  * [x] Get more regular battery updates - modbus
 * [ ] Turn of battery discharge when car charging — drafted via Modbus (`ecoflow-battery-lock.yaml`/`ecoflow-battery-unlock.yaml`), untested pending installer confirming Modbus control mode
   * [ ] Prevent the car consuming energy from the battery (either use enhanced mode and my poersonal password, or modbus) — see above, drafted not tested
 * [ ] Get the car to take up the remaining capacity
 * [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
 * [ ] Yield after slightly longer spike (perhaps linked to level) so coffee does not affect it?
-* [ ] Follow up with installer — EcoFlow Modbus returns "Illegal Data Address" on every register despite him saying he'd enabled it
