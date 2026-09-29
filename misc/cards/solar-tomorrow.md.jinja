@@ -2,7 +2,7 @@
 {% set forecast_south = states('sensor.energy_production_tomorrow_2') | float(0) %}
 {% set forecast = forecast_east + forecast_south %}
 
-{# EcoFlow S1 Vloer nameplate capacity — see background.md. #}
+{# EcoFlow S1 nameplate capacity — see background.md. #}
 {% set battery_capacity_kwh = 5.1 %}
 {% set soc_at_sunrise = 10 %}
 {% set background_load_kw = states('input_number.solar_background_load_kw') | float(0.15) %}
@@ -22,10 +22,10 @@
 {% set gross_surplus = [forecast - background_estimate, 0] | max %}
 {% set surplus = [gross_surplus - battery_room_kwh, 0] | max %}
 
-# Est. Surplus: {{ surplus | round(1) }} kWh
+## Est. Surplus: {{ surplus | round(1) }} kWh
 
-## {{ forecast | round(1) }} kWh forecast solar
+**Forecast production: {{ forecast | round(1) }} kWh**
 
-Background use estimate: {{ daylight_hours | round(1) }}h daylight × {{ background_load_kw }} kW ≈ {{ background_estimate | round(1) }} kWh
+Background: {{ daylight_hours | round(1) }}h daylight × {{ background_load_kw }} kW ≈ {{ background_estimate | round(1) }} kWh
 
 Battery assumed {{ soc_at_sunrise }}% at sunrise ({{ battery_room_kwh | round(1) }} kWh available)
