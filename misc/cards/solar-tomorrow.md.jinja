@@ -2,7 +2,7 @@
 {% set forecast_south = states('sensor.energy_production_tomorrow_2') | float(0) %}
 {% set forecast = forecast_east + forecast_south %}
 
-{# EcoFlow S1 Vloer nameplate capacity — see background.md. #}
+{# EcoFlow S1 nameplate capacity — see background.md. #}
 {% set battery_capacity_kwh = 5.1 %}
 {% set soc_at_sunrise = 10 %}
 {% set background_load_kw = states('input_number.solar_background_load_kw') | float(0.15) %}
