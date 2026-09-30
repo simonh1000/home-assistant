@@ -6,13 +6,12 @@
 {% set forecast_south = states('sensor.energy_production_today_2') | float(0) if south_panels_active else 0 %}
 {% set forecast_total = forecast_east + forecast_south %}
 
-{# Forecast.solar's own "remaining today" sensors (disabled by default in the
-   integration — enable them). Falls back to the full-day forecast if they are
-   unavailable so the card still renders. #}
-{% set remaining_east = states('sensor.energy_production_today_remaining') | float(none) %}
-{% set remaining_south = states('sensor.energy_production_today_remaining_2') | float(none) if south_panels_active else 0 %}
-{% set have_remaining = remaining_east is not none and remaining_south is not none %}
-{% set forecast_remaining = (remaining_east + remaining_south) if have_remaining else forecast_total %}
+{# Forecast.solar's "remaining today" sensors only refresh when the integration
+   polls (roughly hourly), so they go stale. Use the full-day forecast minus
+   what the EcoFlow has actually produced, which updates live and corrects for
+   a day that beats or misses the forecast. #}
+{% set produced_today = states('sensor.ecoflow_powerocean_solar_yield_today') | float(0) %}
+{% set forecast_remaining = [forecast_total - produced_today, 0] | max %}
 
 {# EcoFlow S1 nameplate capacity — see background.md. Not read from a
    sensor because nothing here reports usable/rated capacity live. #}
@@ -32,11 +31,11 @@
 
 {# Daylight still to come. Above the horizon that is simply time to sunset.
    Below it, either before dawn (the whole day is still ahead) or after
-   sunset (nothing left) — the remaining forecast tells the two apart. #}
+   sunset (nothing left) — the time of day tells the two apart. #}
 {% if is_state('sun.sun', 'above_horizon') %}
   {% set remaining_hours = (next_setting - now().timestamp()) / 3600 %}
 {% else %}
-  {% set remaining_hours = daylight_hours if forecast_remaining > 0 else 0 %}
+  {% set remaining_hours = daylight_hours if now().hour < 12 else 0 %}
 {% endif %}
 
 {# The simple estimate: nothing here can isolate "background-only" import
@@ -57,7 +56,7 @@
 
 ## Est Remaining Surplus: {{ surplus_remaining | round(1) }} kWh
 
-### Produced so far: {{ states('sensor.ecoflow_powerocean_solar_yield_today') | float(0) | round(1) }} kWh 
+### Produced so far: {{ produced_today | round(1) }} kWh 
 
 | kWh | Current | Whole day |
 |---|---:|---:|
