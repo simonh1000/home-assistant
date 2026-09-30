@@ -24,6 +24,9 @@ DASHBOARD_FILE = DIST_DIR / "ui-lovelace.yaml"
 DASHBOARD_SOURCE = Path("src/ui-lovelace.yaml")
 WWW_SOURCE = Path("src/www")
 WWW_DIST = DIST_DIR / "www"
+# Directories on the HA host that rsync --delete must never remove, keyed by
+# the synced directory's name (HACS installs frontend js libs into www/community).
+PROTECTED = {"www": ["community"]}
 SMB_TARGET = "//192.168.0.183/config"
 SMB_HOST = "192.168.0.183"
 
@@ -115,7 +118,8 @@ def deploy_items(files_to_deploy, target_dir):
         if f.is_dir():
             print(f"Syncing {f.name}/...")
             dest = os.path.join(target_dir, f.name) + "/"
-            subprocess.run(["rsync", "-a", "--delete", f"{f}/", dest], check=True)
+            excludes = [f"--exclude=/{name}/" for name in PROTECTED.get(f.name, [])]
+            subprocess.run(["rsync", "-a", "--delete", *excludes, f"{f}/", dest], check=True)
         else:
             print(f"Copying {f.name}...")
             subprocess.run(["cp", str(f), target_dir], check=True)
