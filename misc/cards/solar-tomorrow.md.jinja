@@ -1,5 +1,8 @@
+{# South-facing panels are out of service. Set to true when they are back —
+   nothing else needs to change. #}
+{% set south_panels_active = false %}
 {% set forecast_east = states('sensor.energy_production_tomorrow') | float(0) %}
-{% set forecast_south = states('sensor.energy_production_tomorrow_2') | float(0) %}
+{% set forecast_south = states('sensor.energy_production_tomorrow_2') | float(0) if south_panels_active else 0 %}
 {% set forecast = forecast_east + forecast_south %}
 
 {# EcoFlow S1 nameplate capacity — see background.md. #}

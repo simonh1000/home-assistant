@@ -1,13 +1,16 @@
 {# Forecast.solar #}
+{# South-facing panels are out of service. Set to true when they are back —
+   nothing else needs to change. #}
+{% set south_panels_active = false %}
 {% set forecast_east = states('sensor.energy_production_today') | float(0) %}
-{% set forecast_south = states('sensor.energy_production_today_2') | float(0) %}
+{% set forecast_south = states('sensor.energy_production_today_2') | float(0) if south_panels_active else 0 %}
 {% set forecast_total = forecast_east + forecast_south %}
 
 {# Forecast.solar's own "remaining today" sensors (disabled by default in the
    integration — enable them). Falls back to the full-day forecast if they are
    unavailable so the card still renders. #}
 {% set remaining_east = states('sensor.energy_production_today_remaining') | float(none) %}
-{% set remaining_south = states('sensor.energy_production_today_remaining_2') | float(none) %}
+{% set remaining_south = states('sensor.energy_production_today_remaining_2') | float(none) if south_panels_active else 0 %}
 {% set have_remaining = remaining_east is not none and remaining_south is not none %}
 {% set forecast_remaining = (remaining_east + remaining_south) if have_remaining else forecast_total %}
 
@@ -59,7 +62,7 @@
 | kWh | Current | Whole day |
 |---|---:|---:|
 | Forecast | {{ forecast_remaining | round(1) }} | {{ forecast_total | round(1) }} |
-| Battery room | {{ battery_room_now_kwh | round(1) }} ({{ soc_now | round(0) }}%) | {{ battery_room_kwh | round(1) }} ({{ soc_daybreak | round(0) }}%) |
+| Battery ({{ soc_now | round(0) }}%) | {{ battery_room_now_kwh | round(1) }} | {{ battery_room_kwh | round(1) }} |
 | Background | {{ background_remaining | round(1) }} | {{ background_estimate | round(1) }} |
 | **Surplus** | **{{ surplus_remaining | round(1) }}** | **{{ surplus | round(1) }}** |
 
