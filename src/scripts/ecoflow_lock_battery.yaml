@@ -1,30 +1,17 @@
 ecoflow_lock_battery:
   alias: "EcoFlow: Lock Battery (Car Charging)"
+  description: |
+    Uses the MaxGrmm/EF-PowerOcean-TcpModbus integration: takes control from
+    the EcoFlow app and holds the battery (no charge, no discharge) so the car
+    pulls only from solar/grid. The integration sends the inverter heartbeat
+    itself, so no loop is needed here.
   sequence:
-    - action: modbus.write_register
+    - action: switch.turn_on
+      target:
+        entity_id: switch.ecoflow_powerocean_modbus_control
+    - action: select.select_option
+      target:
+        entity_id: select.ecoflow_powerocean_battery_mode
       data:
-        hub: ecoflow_powerocean
-        slave: 1
-        address: 40534 # 0x0215 System Control Command — Control Method (bits 4-7) = 3 (battery-based)
-        value: [0, 48] # HIGH word first for writes (opposite of read order — see ecoflow.yaml comment)
-    - action: modbus.write_register
-      data:
-        hub: ecoflow_powerocean
-        slave: 1
-        address: 40571 # 0x023A Battery Charge/Discharge Setting — 0 W (neither charge nor discharge)
-        value: [0, 0]
-    - repeat:
-        while:
-          - condition: state
-            entity_id: sensor.ohme_home_pro_delta_11kw_status
-            state: "charging"
-        sequence:
-          - action: modbus.write_register
-            data:
-              hub: ecoflow_powerocean
-              slave: 1
-              address: 40608 # 0x025F Heartbeat Signal — must be sent at least every 60s or the inverter drops the override
-              value: 1
-          - delay:
-              seconds: 45
-  mode: restart
+        option: hold_battery
+  mode: single

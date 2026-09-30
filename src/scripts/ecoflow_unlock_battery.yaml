@@ -1,10 +1,15 @@
 ecoflow_unlock_battery:
   alias: "EcoFlow: Unlock Battery (Car Idle)"
+  description: |
+    Returns the battery to normal self-consumption and hands control back to
+    the EcoFlow app (takes effect within about 60 s).
   sequence:
-    - action: modbus.write_register
+    - action: select.select_option
+      target:
+        entity_id: select.ecoflow_powerocean_battery_mode
       data:
-        hub: ecoflow_powerocean
-        slave: 1
-        address: 40534 # 0x0215 System Control Command — Control Method back to 0 (default/self-consumption)
-        value: [0, 0]
+        option: automatic
+    - action: switch.turn_off
+      target:
+        entity_id: switch.ecoflow_powerocean_modbus_control
   mode: single

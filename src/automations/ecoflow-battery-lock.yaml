@@ -2,12 +2,12 @@ id: ecoflow_battery_lock
 alias: "EcoFlow: Battery Lock on EV Charge Start"
 description: |
   Prevents the car from draining the EcoFlow home battery: when the Ohme
-  starts charging, hands battery control to Modbus and pins charge/discharge
-  at 0 W, so the car draws only from solar/grid while charging.
+  starts charging, switches the EcoFlow integration to "Hold battery", so the
+  car draws only from solar/grid while charging.
 
   Note: if Home Assistant restarts mid-charge, this won't re-trigger (no new
-  'to: charging' transition), so the heartbeat loop in ecoflow_lock_battery
-  would not resume and the inverter reverts control on its own after ~60s.
+  'to: charging' transition). The integration stops sending its heartbeat
+  while HA is down, so the inverter reverts to the app's control on its own.
 triggers:
   - trigger: state
     entity_id: sensor.ohme_home_pro_delta_11kw_status

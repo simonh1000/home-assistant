@@ -44,8 +44,8 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 
 ### 7. [ecoflow-battery-lock.yaml](src/automations/ecoflow-battery-lock.yaml) & [ecoflow-battery-unlock.yaml](src/automations/ecoflow-battery-unlock.yaml)
 
-- **Battery Protection:** When the Ohme starts charging, hands the EcoFlow battery over to Modbus control and pins charge/discharge at 0 W (via [ecoflow_lock_battery.yaml](src/scripts/ecoflow_lock_battery.yaml)) so the car can't drain stored battery energy — it only pulls from solar/grid. Reverts to normal self-consumption control (via [ecoflow_unlock_battery.yaml](src/scripts/ecoflow_unlock_battery.yaml)) once charging stops.
-- **Status:** untested — depends on the installer confirming Modbus control mode is active on the inverter (see [TODO](#-todo)). Register map is documented in [ecoflow.yaml](src/modbus/ecoflow.yaml).
+- **Battery Protection:** When the Ohme starts charging, switches the EcoFlow integration (MaxGrmm/EF-PowerOcean-TcpModbus) to **Hold battery** with Modbus Control on (via [ecoflow_lock_battery.yaml](src/scripts/ecoflow_lock_battery.yaml)) so the car can't drain stored battery energy — it only pulls from solar/grid. Reverts to normal self-consumption control (via [ecoflow_unlock_battery.yaml](src/scripts/ecoflow_unlock_battery.yaml): Battery Mode back to Automatic, Modbus Control off) once charging stops.
+- **Status:** untested. Uses `switch.ecoflow_powerocean_modbus_control` and `select.ecoflow_powerocean_battery_mode` — check these entity IDs exist in your install (see [TODO](#-todo)).
 
 ---
 
@@ -75,7 +75,7 @@ The dashboard includes:
 
 ### [ecoflow_lock_battery.yaml](src/scripts/ecoflow_lock_battery.yaml) & [ecoflow_unlock_battery.yaml](src/scripts/ecoflow_unlock_battery.yaml)
 
-- Modbus writes that lock/unlock the EcoFlow battery's charge/discharge, driven by the ecoflow-battery-lock/unlock automations above. `ecoflow_lock_battery` also loops a heartbeat write every 45s for as long as the car is charging (required by the inverter at least every 60s to keep the override active).
+- Set the EcoFlow integration's Battery Mode (Hold battery / Automatic) and Modbus Control switch, driven by the ecoflow-battery-lock/unlock automations above. The integration sends the inverter heartbeat itself.
 
 ---
 
@@ -109,8 +109,8 @@ Because HA resolves `!include_dir_*` paths relative to its config root, the depl
   * [x] Update surplus prediction throughout the day
   * [x] Get more regular battery updates - modbus
 
-* [ ] Turn of battery discharge when car charging — drafted via Modbus (`ecoflow-battery-lock.yaml`/`ecoflow-battery-unlock.yaml`), untested pending installer confirming Modbus control mode
-  * [ ] Prevent the car consuming energy from the battery (either use enhanced mode and my poersonal password, or modbus) — see above, drafted not tested
+* [ ] Turn of battery discharge when car charging — drafted via the EcoFlow integration's Battery Mode (`ecoflow-battery-lock.yaml`/`ecoflow-battery-unlock.yaml`), untested
+  * [ ] Prevent the car consuming energy from the battery — see above, drafted not tested
 
 * [ ] Get the car to take up the remaining capacity
 
