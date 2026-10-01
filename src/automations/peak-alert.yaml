@@ -13,6 +13,6 @@ triggers:
 actions:
   - action: script.notify_both_phones
     data:
-      title: "Peak Warning: 6kW Exceeded"
-      message: "[{{ now().strftime('%H:%M') }}] House load is currently {{ (states('sensor.p1_meter_power') | float(0) / 1000) | round(1) }}kW. Average peak risk!"
+      title: "Capacity Charge Warning: 6kW Exceeded"
+      message: "[{{ now().strftime('%H:%M') }}] House load is currently {{ (states('sensor.p1_meter_power') | float(0) / 1000) | round(1) }}kW. Capacity charge risk!"
 mode: single
