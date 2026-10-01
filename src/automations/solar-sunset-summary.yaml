@@ -1,0 +1,27 @@
+id: solar_sunset_summary
+alias: "Solar: Sunset Production Summary"
+description: >
+  NOTIFICATION ONLY: At sunset, reports the day's total solar production
+  as a percentage of the Forecast.solar full-day forecast.
+variables:
+  # South-facing panels are out of service. Set to true when they are back
+  # (same flag as in the solar cards).
+  south_panels_active: false
+  forecast_kwh: >
+    {{ states('sensor.energy_production_today') | float(0)
+       + (states('sensor.energy_production_today_2') | float(0) if south_panels_active else 0) }}
+  produced_kwh: "{{ states('sensor.ecoflow_powerocean_solar_yield_today') | float(0) }}"
+triggers:
+  - trigger: sun
+    event: sunset
+conditions:
+  - condition: template
+    value_template: "{{ forecast_kwh | float(0) > 0 }}"
+actions:
+  - action: script.notify_simon
+    data:
+      title: "Solar: {{ (produced_kwh / forecast_kwh * 100) | round(0) | int }}% of forecast"
+      message: >
+        [{{ now().strftime('%H:%M') }}] Produced {{ produced_kwh | round(1) }} kWh
+        vs {{ forecast_kwh | round(1) }} kWh forecast.
+mode: single
