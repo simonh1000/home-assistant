@@ -98,6 +98,13 @@ def combine(version_tag=None):
         shutil.copy2(CONFIG_SOURCE, CONFIG_FILE)
         print(f"  + {CONFIG_FILE.relative_to(DIST_DIR.parent)}")
 
+    # Placeholders for the other paths configuration.yaml includes, which live
+    # only on the HA host. Without them the VS Code HA extension fails to
+    # resolve dist/configuration.yaml ("ENOENT ... scenes.yaml"). Never deployed:
+    # deploy() uploads an explicit list that excludes these.
+    (DIST_DIR / "scenes.yaml").write_text("[]\n")
+    (DIST_DIR / "themes").mkdir()
+
     # Copy ui-lovelace.yaml to dist
     if DASHBOARD_SOURCE.exists():
         shutil.copy2(DASHBOARD_SOURCE, DASHBOARD_FILE)
