@@ -1,0 +1,68 @@
+{# Forecast.solar #}
+{# South-facing panels are out of service. Set to true when they are back —
+   nothing else needs to change. #}
+{% set south_panels_active = false %}
+{% set forecast_east = states('sensor.energy_production_today') | float(0) %}
+{% set forecast_south = states('sensor.energy_production_today_2') | float(0) if south_panels_active else 0 %}
+{% set forecast_total = forecast_east + forecast_south %}
+
+{# Forecast.solar's "remaining today" sensors only refresh when the integration
+   polls (roughly hourly), so they go stale. Use the full-day forecast minus
+   what the EcoFlow has actually produced, which updates live and corrects for
+   a day that beats or misses the forecast. #}
+{% set produced_today = states('sensor.ecoflow_powerocean_solar_yield_today') | float(0) %}
+{% set forecast_remaining = [forecast_total - produced_today, 0] | max %}
+
+{# EcoFlow S1 nameplate capacity — see background.md. Not read from a
+   sensor because nothing here reports usable/rated capacity live. #}
+{% set battery_capacity_kwh = 5.1 %}
+{% set soc_now = states('sensor.ecoflow_powerocean_battery_soc') | float(0) %}
+{% set soc_daybreak = states('input_number.battery_soc_at_daybreak') | float(soc_now) %}
+{% set background_load_kw = states('input_number.solar_background_load_kw') | float(0.15) %}
+
+{# Daylight length for today. sun.sun only ever exposes the *next* rising/
+   setting, so during the day next_rising has already rolled over to
+   tomorrow — back it off by 24h to recover today's sunrise. This drifts by
+   the day-length delta (seconds, not minutes) so it's fine here. #}
+{% set next_rising = as_timestamp(state_attr('sun.sun', 'next_rising')) %}
+{% set next_setting = as_timestamp(state_attr('sun.sun', 'next_setting')) %}
+{% set today_sunrise = next_rising if next_rising < next_setting else next_rising - 86400 %}
+{% set daylight_hours = (next_setting - today_sunrise) / 3600 %}
+
+{# Daylight still to come. Above the horizon that is simply time to sunset.
+   Below it, either before dawn (the whole day is still ahead) or after
+   sunset (nothing left) — the time of day tells the two apart. #}
+{% if is_state('sun.sun', 'above_horizon') %}
+  {% set remaining_hours = (next_setting - now().timestamp()) / 3600 %}
+{% else %}
+  {% set remaining_hours = daylight_hours if now().hour < 12 else 0 %}
+{% endif %}
+
+{# The simple estimate: nothing here can isolate "background-only" import
+   during solar hours (P1 import reflects grid draw only, since panels feed
+   the house directly too), so background use during solar hours is modelled
+   as a flat rate × daylight hours rather than measured. #}
+{% set background_estimate = daylight_hours * background_load_kw %}
+{% set background_remaining = remaining_hours * background_load_kw %}
+
+{# Room the battery still has to fill, as of daybreak and as of now. Whatever
+   the battery still needs isn't "surplus" — it'll be soaked up by
+   self-consumption before anything reaches an appliance or the car. #}
+{% set battery_room_kwh = battery_capacity_kwh * (1 - soc_daybreak / 100) %}
+{% set battery_room_now_kwh = battery_capacity_kwh * (1 - soc_now / 100) %}
+
+{% set surplus = [forecast_total - background_estimate - battery_room_kwh, 0] | max %}
+{% set surplus_remaining = [forecast_remaining - background_remaining - battery_room_now_kwh, 0] | max %}
+
+## Est Remaining Surplus: {{ surplus_remaining | round(1) }} kWh
+
+### Produced so far: {{ produced_today | round(1) }} kWh 
+
+| kWh | Current | Whole day |
+|---|---:|---:|
+| Forecast | {{ forecast_remaining | round(1) }} | {{ forecast_total | round(1) }} |
+| Battery ({{ soc_now | round(0) }}%) | {{ battery_room_now_kwh | round(1) }} | {{ battery_room_kwh | round(1) }} |
+| Background | {{ background_remaining | round(1) }} | {{ background_estimate | round(1) }} |
+| **Surplus** | **{{ surplus_remaining | round(1) }}** | **{{ surplus | round(1) }}** |
+
+Background load: {{ background_load_kw }} kW

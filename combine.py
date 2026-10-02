@@ -11,20 +11,22 @@ from pathlib import Path
 VERSION_FILE = Path("VERSION")
 DIST_DIR = Path("dist")
 # configuration.yaml pulls these in via !include_dir_list / !include_dir_merge_named,
-# which HA resolves relative to the config root — so the "src/..." path has to be
-# preserved all the way to the deployed HA config directory, not flattened.
+# which HA resolves relative to the config root.
 AUTOMATIONS_SOURCE = Path("src/automations")
-AUTOMATIONS_DIST = DIST_DIR / "src/automations"
+AUTOMATIONS_DIST = DIST_DIR / "automations"
 SCRIPTS_SOURCE = Path("src/scripts")
-SCRIPTS_DIST = DIST_DIR / "src/scripts"
-HELPERS_FILE = DIST_DIR / "helpers.yaml"
-HELPERS_SOURCE = Path("src/helpers.yaml")
+SCRIPTS_DIST = DIST_DIR / "scripts"
+HELPERS_SOURCE = Path("src/helpers")
+HELPERS_DIST = DIST_DIR / "helpers"
 CONFIG_FILE = DIST_DIR / "configuration.yaml"
 CONFIG_SOURCE = Path("src/configuration.yaml")
 DASHBOARD_FILE = DIST_DIR / "ui-lovelace.yaml"
 DASHBOARD_SOURCE = Path("src/ui-lovelace.yaml")
 WWW_SOURCE = Path("src/www")
 WWW_DIST = DIST_DIR / "www"
+# Directories on the HA host that rsync --delete must never remove, keyed by
+# the synced directory's name (HACS installs frontend js libs into www/community).
+PROTECTED = {"www": ["community"]}
 SMB_TARGET = "//192.168.0.183/config"
 SMB_HOST = "192.168.0.183"
 
@@ -70,41 +72,49 @@ def copy_tree(source_dir, dist_dir):
         shutil.rmtree(dist_dir)
     dist_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source_dir, dist_dir)
+    
+    # Just count files for feedback
+    file_count = sum(1 for p in dist_dir.rglob('*') if p.is_file())
+    print(f"  + {dist_dir.relative_to(DIST_DIR.parent)}/ ({file_count} files)")
     return True
 
 def combine(version_tag=None):
     """Stage everything HA needs into dist/, mirroring the src/ layout configuration.yaml expects."""
-    print(f"Copying {AUTOMATIONS_SOURCE} to {AUTOMATIONS_DIST}...")
-    a_success = copy_tree(AUTOMATIONS_SOURCE, AUTOMATIONS_DIST)
+    if DIST_DIR.exists():
+        shutil.rmtree(DIST_DIR)
+    DIST_DIR.mkdir(parents=True, exist_ok=True)
 
-    print(f"Copying {SCRIPTS_SOURCE} to {SCRIPTS_DIST}...")
+    print("Staging files to /dist...")
+    a_success = copy_tree(AUTOMATIONS_SOURCE, AUTOMATIONS_DIST)
     s_success = copy_tree(SCRIPTS_SOURCE, SCRIPTS_DIST)
+    h_success = copy_tree(HELPERS_SOURCE, HELPERS_DIST)
 
     if version_tag:
         with open(DIST_DIR / "version.txt", "w") as f:
             f.write(version_tag)
 
-    # Copy helpers.yaml to dist
-    if HELPERS_SOURCE.exists():
-        print(f"Copying {HELPERS_SOURCE} to {HELPERS_FILE}...")
-        shutil.copy2(HELPERS_SOURCE, HELPERS_FILE)
-
     # Copy configuration.yaml to dist
     if CONFIG_SOURCE.exists():
-        print(f"Copying {CONFIG_SOURCE} to {CONFIG_FILE}...")
         shutil.copy2(CONFIG_SOURCE, CONFIG_FILE)
+        print(f"  + {CONFIG_FILE.relative_to(DIST_DIR.parent)}")
+
+    # Placeholders for the other paths configuration.yaml includes, which live
+    # only on the HA host. Without them the VS Code HA extension fails to
+    # resolve dist/configuration.yaml ("ENOENT ... scenes.yaml"). Never deployed:
+    # deploy() uploads an explicit list that excludes these.
+    (DIST_DIR / "scenes.yaml").write_text("[]\n")
+    (DIST_DIR / "themes").mkdir()
 
     # Copy ui-lovelace.yaml to dist
     if DASHBOARD_SOURCE.exists():
-        print(f"Copying {DASHBOARD_SOURCE} to {DASHBOARD_FILE}...")
         shutil.copy2(DASHBOARD_SOURCE, DASHBOARD_FILE)
+        print(f"  + {DASHBOARD_FILE.relative_to(DIST_DIR.parent)}")
 
     # Copy www directory to dist
     if WWW_SOURCE.exists():
-        print(f"Copying {WWW_SOURCE} to {WWW_DIST}...")
         copy_tree(WWW_SOURCE, WWW_DIST)
 
-    return a_success or s_success
+    return a_success or s_success or h_success
 
 def deploy_items(files_to_deploy, target_dir):
     """Copy files as-is; sync directories with --delete so files removed locally
@@ -113,11 +123,12 @@ def deploy_items(files_to_deploy, target_dir):
         if not f.exists():
             continue
         if f.is_dir():
-            print(f"Syncing directory {f} -> {target_dir}/{f.name}...")
+            print(f"Syncing {f.name}/...")
             dest = os.path.join(target_dir, f.name) + "/"
-            subprocess.run(["rsync", "-a", "--delete", f"{f}/", dest], check=True)
+            excludes = [f"--exclude=/{name}/" for name in PROTECTED.get(f.name, [])]
+            subprocess.run(["rsync", "-a", "--delete", *excludes, f"{f}/", dest], check=True)
         else:
-            print(f"Copying {f}...")
+            print(f"Copying {f.name}...")
             subprocess.run(["cp", str(f), target_dir], check=True)
 
 def deploy(files_to_deploy):
@@ -227,13 +238,6 @@ def update_ha_version_state(version_tag):
         except subprocess.CalledProcessError as e:
             print(f"Failed to update {entity_id}: {e}")
 
-def print_reload_reminder():
-    """Print a prominent reminder to reload YAML in Home Assistant."""
-    print("\n" + "="*60)
-    print("REMINDER: You must RELOAD your YAML in Home Assistant:")
-    print("Settings -> Tools -> YAML -> AUTOMATIONS & SCRIPTS")
-    print("="*60 + "\n")
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Combine and deploy HA config.")
     parser.add_argument("--deploy", action="store_true", help="Upload to Home Assistant")
@@ -252,8 +256,14 @@ if __name__ == "__main__":
     
     if combine(version_tag=target_v):
         if args.deploy:
-            deploy([DIST_DIR / "src", HELPERS_FILE, CONFIG_FILE, DASHBOARD_FILE, WWW_DIST])
+            deploy([
+                AUTOMATIONS_DIST,
+                SCRIPTS_DIST,
+                HELPERS_DIST,
+                CONFIG_FILE,
+                DASHBOARD_FILE,
+                WWW_DIST
+            ])
             reload_ha_yaml()
             update_ha_version_state(target_v)
         
-        print_reload_reminder()

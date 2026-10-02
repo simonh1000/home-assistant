@@ -2,7 +2,12 @@ title: EV Guardian
 views:
   - title: Monitoring
     cards:
-      - type: horizontal-stack
+      - type: tile
+        entity: select.ecoflow_powerocean_battery_mode
+        name: Battery Mode
+        features:
+          - type: select-options
+      - type: vertical-stack
         cards:
           - type: entity
             entity: input_select.ev_guardian_state

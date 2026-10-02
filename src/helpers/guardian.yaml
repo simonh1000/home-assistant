@@ -28,6 +28,7 @@
 #                                              |     YIELDING      |
 #                                              +-------------------+
 #
+#   * 18:15 also moves YIELDING / COOLDOWN to COOKING (the EV is already paused).
 # ======================================================================
 
 input_select:
