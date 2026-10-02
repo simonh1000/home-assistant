@@ -149,7 +149,7 @@ sensor.p1_meter_peak_demand_current_month: n/a
 - number.ecoflow_powerocean_battery_reserve (%)
 - number.ecoflow_powerocean_minimum_soc_limit (%)
 - number.ecoflow_powerocean_led_brightness (%)
-- select.ecoflow_powerocean_battery_mode
+- select.ecoflow_powerocean_battery_mode ["automatic",....]
 - switch.ecoflow_powerocean_battery_saver_mode
 
 ### API only
