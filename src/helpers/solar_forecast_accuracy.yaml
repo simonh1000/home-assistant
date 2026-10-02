@@ -1,0 +1,61 @@
+# ======================================================================
+# Solar Forecast Accuracy: can the morning forecast be relied upon?
+#
+#   sunrise -> sensor.solar_forecast_at_daybreak : what Forecast.solar
+#              said for the whole day when the day's decisions are made
+#   sunset  -> sensor.solar_forecast_accuracy    : actual production as a
+#              % of that morning forecast
+#
+# Trigger-based sensors keep their last value between triggers, so the
+# morning forecast is still there at sunset. state_class: measurement
+# keeps both in long-term statistics indefinitely (recorder history is
+# purged after ~10 days). Automation "Solar: Sunset Production Summary"
+# reads the accuracy sensor to send its notification.
+# ======================================================================
+
+template:
+  - triggers:
+      - trigger: sun
+        event: sunrise
+    variables:
+      # South-facing panels are out of service. Set to true when they are back
+      # (same flag as in the solar cards).
+      south_panels_active: false
+    sensor:
+      - name: "Solar Forecast at Daybreak"
+        unique_id: solar_forecast_at_daybreak
+        icon: mdi:weather-sunset-up
+        unit_of_measurement: "kWh"
+        state_class: measurement
+        state: >
+          {{ (states('sensor.energy_production_today') | float(0)
+             + (states('sensor.energy_production_today_2') | float(0) if south_panels_active else 0))
+             | round(1) }}
+        attributes:
+          date: "{{ now().date().isoformat() }}"
+          south_panels_active: "{{ south_panels_active }}"
+
+  - triggers:
+      - trigger: sun
+        event: sunset
+    variables:
+      forecast_kwh: "{{ states('sensor.solar_forecast_at_daybreak') | float(0) }}"
+      # Only trust the forecast if it was captured today (HA may have been down at sunrise)
+      forecast_is_today: >
+        {{ state_attr('sensor.solar_forecast_at_daybreak', 'date') == now().date().isoformat() }}
+      produced_kwh: "{{ states('sensor.ecoflow_powerocean_solar_yield_today') | float(0) }}"
+    sensor:
+      - name: "Solar Forecast Accuracy"
+        unique_id: solar_forecast_accuracy
+        icon: mdi:solar-power-variant
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {{ (produced_kwh / forecast_kwh * 100) | round(0) | int
+             if forecast_is_today and forecast_kwh > 0 else none }}
+        attributes:
+          # date makes every day's update a state change, so the automation always fires
+          date: "{{ now().date().isoformat() }}"
+          produced_kwh: "{{ produced_kwh | round(1) }}"
+          forecast_kwh: "{{ forecast_kwh | round(1) }}"
+          south_panels_active: "{{ state_attr('sensor.solar_forecast_at_daybreak', 'south_panels_active') }}"
