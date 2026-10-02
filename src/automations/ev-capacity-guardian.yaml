@@ -33,7 +33,7 @@ triggers:
     to: "charging"
     id: "dinner_check"
   - trigger: time
-    at: "20:30:00"
+    at: "20:15:00"
     id: "dinner_end"
   - trigger: time_pattern
     seconds: "/30"
@@ -82,13 +82,13 @@ actions:
                 [{{ now().strftime('%H:%M') }}] House load stayed above 6.0kW
                 for 30 seconds while the EV was not charging (status: {{ ohme_state }}, guardian: {{ guardian_state }}).
 
-      # 3. Dinner lockout start (18:15 - 20:30): transition idle/yielding/cooldown -> cooking
+      # 3. Dinner lockout start (18:15 - 20:15): transition idle/yielding/cooldown -> cooking
       - conditions:
           - condition: trigger
             id: "dinner_check"
           - condition: time
             after: "18:15:00"
-            before: "20:30:00"
+            before: "20:15:00"
           - condition: state
             entity_id: input_select.ev_guardian_state
             state: ["idle", "yielding", "cooldown"]
@@ -157,7 +157,7 @@ actions:
             target: { entity_id: input_select.ev_guardian_state }
             data: { option: yielding }
 
-      # 7. Dinner window end (20:30): transition cooking -> idle
+      # 7. Dinner window end (20:15): transition cooking -> idle
       - conditions:
           - condition: trigger
             id: "dinner_end"
@@ -189,7 +189,7 @@ actions:
           - condition: template
             value_template: "{{ guardian_state in ['yielding', 'cooldown'] }}"
           - condition: time
-            after: "20:30:00"
+            after: "20:15:00"
             before: "18:15:00"
           - condition: template
             value_template: >

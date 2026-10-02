@@ -29,7 +29,7 @@ views:
           **{{ states('input_select.ev_guardian_state') | capitalize }}**
 
           - **Idle**: EV charging normally or monitoring for spikes.
-          - **Cooking**: Paused for dinner window (18:15 to 20:30).
+          - **Cooking**: Paused for dinner window (18:15 to 20:15).
           - **Yielding**: Paused because house load crossed **6.0kW**. Stays here until the house is quiet.
           - **Cooldown**: Load has been under 500W for 2 minutes. Waiting for the 10-minute total yielding timer to elapse before resuming.
 

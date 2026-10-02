@@ -23,7 +23,7 @@ triggers:
     for: { minutes: 10 }
     id: "resume_load_low"
   - trigger: time
-    at: "20:30:00"
+    at: "20:15:00"
     id: "resume_lockout_end"
   - trigger: time
     at: "22:30:00"
@@ -73,7 +73,7 @@ actions:
               - condition: trigger
                 id: "resume_safety_net"
           - condition: time
-            after: "20:30:00"
+            after: "20:15:00"
             before: "18:15:00"
         sequence:
           - choose:

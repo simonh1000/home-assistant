@@ -102,7 +102,7 @@ async def _jump_to(hass, freezer, when):
 
 
 async def _skip_past_dinner_start(hass, freezer):
-    """Fire the 18:15 trigger (jumping straight to 20:30 would fire it too, late) and settle."""
+    """Fire the 18:15 trigger (jumping straight to 20:15 would fire it too, late) and settle."""
     await _jump_to(hass, freezer, _tomorrow_at(19, 0))
 
 
@@ -177,9 +177,9 @@ async def test_plugin_during_cooking_pauses_charger(hass, setup_ha_guardian):
 
 
 async def test_dinner_end_returns_to_idle_and_resumes(hass, setup_ha_guardian, freezer):
-    """At 20:30 cooking -> idle and a paused charger goes back to smart_charge."""
+    """At 20:15 cooking -> idle and a paused charger goes back to smart_charge."""
     await _skip_past_dinner_start(hass, freezer)
-    start = _tomorrow_at(20, 29, 59)
+    start = _tomorrow_at(20, 14, 59)
     freezer.move_to(start)
     async_fire_time_changed(hass, start)
 
@@ -195,10 +195,10 @@ async def test_dinner_end_returns_to_idle_and_resumes(hass, setup_ha_guardian, f
 
 
 async def test_dinner_end_does_not_touch_load_pause(hass, setup_ha_guardian, freezer):
-    """20:30 must not resume the EV when guardian is yielding because of house load."""
+    """20:15 must not resume the EV when guardian is yielding because of house load."""
     service_calls = setup_ha_guardian
     await _skip_past_dinner_start(hass, freezer)
-    start = _tomorrow_at(20, 29, 59)
+    start = _tomorrow_at(20, 14, 59)
     freezer.move_to(start)
     async_fire_time_changed(hass, start)
 
