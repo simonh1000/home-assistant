@@ -7,30 +7,25 @@ views:
         name: Battery Mode
         features:
           - type: select-options
-      - type: vertical-stack
-        cards:
-          - type: entity
-            entity: input_select.ev_guardian_state
-            name: Guardian Status
+      - type: entities
+        entities:
           - type: button
             entity: input_boolean.ev_cooking_over
-            name: Cooking Over
+            name: Click after finished cooking to permit car charging
             icon: mdi:stove
-            show_state: false
+            action_name: Done
             tap_action:
               action: toggle
 
       - type: markdown
-        content: >
-          ## EV Guardian State
-          ### Current Status
-          
-          **{{ states('input_select.ev_guardian_state') | capitalize }}**
-          
+        title: EV Guardian
+        content: |
+          {% set st = states('input_select.ev_guardian_state') %}
+          ## <font color="{{ 'green' if st == 'idle' else 'orange' }}">{{ st | capitalize }}</font>
+
+          ---
+
           - **Idle**: EV charging normally or monitoring for spikes.
+          - **Cooking**: Paused for the dinner window (18:15 to 20:15), or until you press Done.
           - **Yielding**: Paused because house load crossed **6.0kW**. Stays here until the house is quiet.
           - **Cooldown**: Load has been under 500W for 2 minutes. Waiting for the 10-minute total yielding timer to elapse before resuming.
-          
-          ---
-          
-          [Check List](/local/checklist.html)

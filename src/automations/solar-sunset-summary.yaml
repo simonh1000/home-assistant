@@ -22,6 +22,5 @@ actions:
     data:
       title: "Solar: {{ (produced_kwh / forecast_kwh * 100) | round(0) | int }}% of forecast"
       message: >
-        [{{ now().strftime('%H:%M') }}] Produced {{ produced_kwh | round(1) }} kWh
-        vs {{ forecast_kwh | round(1) }} kWh forecast.
+        Produced {{ produced_kwh | round(1) }} (vs {{ forecast_kwh | round(1) }} forecast) kWh
 mode: single
