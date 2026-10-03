@@ -6,13 +6,13 @@ description: >
   automatically changing any charger states.
 triggers:
   - trigger: numeric_state
-    entity_id: sensor.p1_meter_active_power
-    above: 6.0
+    entity_id: sensor.p1_meter_power
+    above: 6000
     for:
       minutes: 2
 actions:
   - action: script.notify_both_phones
     data:
-      title: "Peak Warning: 6kW Exceeded"
-      message: "[{{ now().strftime('%H:%M') }}] House load is currently {{ states('sensor.p1_meter_active_power') }}kW. Average peak risk!"
+      title: "Capacity Charge Warning: 6kW Exceeded"
+      message: "[{{ now().strftime('%H:%M') }}] House load is currently {{ (states('sensor.p1_meter_power') | float(0) / 1000) | round(1) }}kW. Capacity charge risk!"
 mode: single

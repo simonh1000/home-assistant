@@ -1,0 +1,20 @@
+id: solar_sunset_summary
+alias: "Solar: Sunset Production Summary"
+description: >
+  NOTIFICATION ONLY: At sunset, reports the day's total solar production
+  as a percentage of the full-day forecast captured at sunrise. The
+  calculation and the daily record live in sensor.solar_forecast_accuracy
+  (src/helpers/solar_forecast_accuracy.yaml); this fires when it updates.
+triggers:
+  - trigger: state
+    entity_id: sensor.solar_forecast_accuracy
+conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state.state not in ['unknown', 'unavailable'] }}"
+actions:
+  - action: script.notify_simon
+    data:
+      title: "Solar: {{ trigger.to_state.state }}% of forecast"
+      message: >
+        Produced {{ trigger.to_state.attributes.produced_kwh }} kWh (morning forecast {{ trigger.to_state.attributes.forecast_kwh }} kWh)
+mode: single

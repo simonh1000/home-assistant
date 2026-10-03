@@ -1,0 +1,3 @@
+# Placeholder so editors can resolve "scene: !include scenes.yaml" in configuration.yaml.
+# The real scenes.yaml lives only on the HA host and is never deployed from here.
+[]

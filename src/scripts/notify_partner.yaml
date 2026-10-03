@@ -6,7 +6,7 @@ notify_partner:
     message:
       example: "Something happened"
   sequence:
-    - action: notify.mobile_app_pixel_8
+    - action: notify.mobile_app_partner
       data:
         title: "{{ title }}"
         message: "{{ message }}"
