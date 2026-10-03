@@ -1,38 +1,49 @@
 title: EV Guardian
 views:
   - title: Monitoring
-    cards:
-      - type: tile
-        entity: select.ecoflow_powerocean_battery_mode
-        name: Battery Mode
-        features:
-          - type: select-options
-      - type: vertical-stack
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        background:
+          color: "#90ee90"   # light green
+          opacity: 40
         cards:
-          - type: entity
-            entity: input_select.ev_guardian_state
-            name: Guardian Status
-          - type: button
-            name: Done Cooking
-            icon: mdi:stove
-            show_state: false
-            tap_action:
-              action: call-service
-              service: automation.trigger
-              target:
-                entity_id: automation.ev_cooking_over_button_handler
+          - type: heading
+            heading: EcoFlow
+            icon: mdi:battery-charging
+          - type: entities
+            entities:
+              - entity: switch.garage_ecoflow_powerocean_modbus_control
+                name: Modbus Control
+              - entity: select.ecoflow_powerocean_battery_mode
+                name: Battery Mode
 
-      - type: markdown
-        content: >
-          ## EV Guardian State
+      - type: grid
+        background:
+          color: "#64b5f6"   # light blue
+          opacity: 40
+        cards:
+          - type: heading
+            heading: EV Guardian
+            icon: mdi:ev-station
+          - type: markdown
+            content: |
+              {% set st = states('input_select.ev_guardian_state') %}
+              ## <font color="{{ 'green' if st == 'idle' else 'orange' }}">{{ st | capitalize }}</font>
 
-          **{{ states('input_select.ev_guardian_state') | capitalize }}**
+              ---
 
-          - **Idle**: EV charging normally or monitoring for spikes.
-          - **Cooking**: Paused for dinner window (18:15 to 20:15).
-          - **Yielding**: Paused because house load crossed **6.0kW**. Stays here until the house is quiet.
-          - **Cooldown**: Load has been under 500W for 2 minutes. Waiting for the 10-minute total yielding timer to elapse before resuming.
-
-          ---
-
-          [Check List](/local/checklist.html)
+              - **Idle**: EV charging normally or monitoring for spikes.
+              - **Cooking**: Paused for the dinner window (18:15 to 20:15), or until you press Done.
+              - **Yielding**: Paused because house load crossed **6.0kW**. Stays here until the house is quiet.
+              - **Cooldown**: Load has been under 500W for 2 minutes. Waiting for the 10-minute total yielding timer to elapse before resuming.
+          - type: entities
+            entities:
+              - type: button
+                entity: input_boolean.ev_cooking_over
+                name: Click after finished cooking to permit car charging
+                icon: mdi:stove
+                action_name: Done
+                tap_action:
+                  action: toggle
