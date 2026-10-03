@@ -138,7 +138,7 @@ actions:
           - action: script.notify_both_phones
             data:
               title: "EV Paused"
-              message: "[{{ now().strftime('%H:%M') }}] EV plugged in during dinner window — Paused for cooking."
+              message: "[{{ now().strftime('%H:%M') }}] EV plugged in during dinner window — Paused."
 
       # quiet_house: Yielding -> Cooldown: set to cooldown after 2 mins under 500W
       - conditions:

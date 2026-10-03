@@ -1,8 +1,9 @@
 alias: "EV: Cooking Over Button"
 description: |
   Resumes EV charging early when the 'Cooking Over' button is pressed or when tapped from
-  a notification action. Transitions ev_guardian_state from cooking -> idle and switches
-  Ohme back to smart_charge if paused.
+  a notification action. 
+    * Transitions ev_guardian_state from cooking -> idle
+    * switches Ohme back to smart_charge if paused.
 triggers:
   - trigger: event
     event_type: mobile_app_notification_action
