@@ -8,13 +8,15 @@
 #
 #   ev_solar_soak       : master switch (also turns Ohme "require approval" off/on)
 #   soak_soc_start      : battery % at/above which soaking may start
-#   soak_soc_floor      : battery % at/below which soaking stops
+#   soak_soc_floor      : battery % at/below which soaking stops AT ONCE (no debounce:
+#                         with the car on the battery falls ~1%/min, and Ohme's cloud
+#                         command adds a delay on top, so the floor is a hard limit)
 #   soak_min_hours_left : daylight hours that must remain to START (a start with
 #                         little sun left would only drain the battery)
 #   soak_car_draw_w     : car draw when charging at its 6 A minimum, 3 phases
 #
-# Both binary sensors are debounced here (delay_on / delay_off) so the
-# automation can simply react to them.
+# Starting is debounced (delay_on) and so is the grid-use check (a passing
+# cloud should not stop a charge), but the battery floor is not.
 # ======================================================================
 
 input_boolean:
@@ -37,7 +39,7 @@ input_number:
     min: 5
     max: 80
     step: 1
-    initial: 25
+    initial: 30
     unit_of_measurement: "%"
   soak_min_hours_left:
     name: "Soak: Daylight Hours Needed to Start"
@@ -79,15 +81,21 @@ template:
              and hours_left >= states('input_number.soak_min_hours_left') | float(3)
              and supply >= demand }}
 
-      # Keep going: battery above its floor, sun still up, and the grid is not
-      # being used (P1 import small). Measured, so it also catches clouds.
+      # Grid import must stay small. Debounced separately so a passing cloud does
+      # not stop a charge, while the battery floor below acts immediately.
+      - name: "Solar Soak Grid Free"
+        unique_id: solar_soak_grid_free
+        icon: mdi:transmission-tower-off
+        delay_off: { minutes: 3 }
+        state: "{{ states('sensor.p1_meter_power') | float(0) < 400 }}"
+
+      # Keep going: soak on, sun up, battery above its floor (immediate), grid free.
       - name: "Solar Soak Keep OK"
         unique_id: solar_soak_keep_ok
         icon: mdi:pause-circle-outline
-        delay_off: { minutes: 3 }
         state: >
           {{ is_state('input_boolean.ev_solar_soak', 'on')
              and is_state('sun.sun', 'above_horizon')
              and states('sensor.ecoflow_powerocean_battery_soc') | float(0)
-                 > states('input_number.soak_soc_floor') | float(25)
-             and states('sensor.p1_meter_power') | float(0) < 400 }}
+                 > states('input_number.soak_soc_floor') | float(30)
+             and is_state('binary_sensor.solar_soak_grid_free', 'on') }}

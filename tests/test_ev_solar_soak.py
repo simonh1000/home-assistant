@@ -139,18 +139,35 @@ async def _start_charging(hass, freezer):
     await hass.async_block_till_done()
 
 
-async def test_pauses_when_battery_reaches_floor(hass, soak, freezer):
+async def test_pauses_at_once_when_battery_reaches_floor(hass, soak, freezer):
     await _start_charging(hass, freezer)
-    hass.states.async_set("sensor.ecoflow_powerocean_battery_soc", "20")  # floor is 25
-    await _advance(hass, freezer, 14)  # 3 min debounce + 10 min since the last mode change
+    hass.states.async_set("sensor.ecoflow_powerocean_battery_soc", "30")  # floor is 30 (stop at or below)
+    # Only 1 minute after starting: no 3 min debounce and no 10 min gap for the floor
+    await _advance(hass, freezer, 1)
     assert hass.states.get(MODE).state == "paused"
+
+
+async def test_does_not_stop_just_above_floor(hass, soak, freezer):
+    await _start_charging(hass, freezer)
+    hass.states.async_set("sensor.ecoflow_powerocean_battery_soc", "31")
+    await _advance(hass, freezer, 14)
+    assert hass.states.get(MODE).state == "max_charge"
 
 
 async def test_pauses_when_grid_is_being_used(hass, soak, freezer):
     await _start_charging(hass, freezer)
     hass.states.async_set("sensor.p1_meter_power", "900")  # limit is 400 W
-    await _advance(hass, freezer, 14)
+    await _advance(hass, freezer, 14)  # 3 min debounce + 10 min since the last mode change
     assert hass.states.get(MODE).state == "paused"
+
+
+async def test_brief_grid_use_does_not_stop_charging(hass, soak, freezer):
+    await _start_charging(hass, freezer)
+    hass.states.async_set("sensor.p1_meter_power", "900")
+    await _advance(hass, freezer, 2)  # shorter than the 3 min debounce
+    hass.states.async_set("sensor.p1_meter_power", "50")
+    await _advance(hass, freezer, 14)
+    assert hass.states.get(MODE).state == "max_charge"
 
 
 async def test_keeps_charging_while_free(hass, soak, freezer):

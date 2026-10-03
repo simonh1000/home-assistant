@@ -48,7 +48,7 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 
 - **Solar soak (while away):** charges the car from solar that would otherwise be exported, so no energy is wasted. The battery covers the gap between solar and the charger's 6 A minimum (~4.1 kW).
 - **Start** (`binary_sensor.solar_soak_start_ok`, held 3 min): `ev_solar_soak` on, car plugged in, battery ≥ `soak_soc_start` (90 %), at least `soak_min_hours_left` (3 h) of daylight left, and solar + available battery discharge ≥ house + car draw. Sets Ohme to `max_charge`.
-- **Stop** (`binary_sensor.solar_soak_keep_ok`, off for 3 min): battery ≤ `soak_soc_floor` (25 %), sun down, or grid import ≥ 400 W. Sets Ohme to `paused`. Mode changes are at least 10 min apart.
+- **Stop** (`binary_sensor.solar_soak_keep_ok`): **at once** when the battery reaches `soak_soc_floor` (30 %) — the battery falls ~1 %/min with the car on, so there is no debounce and no 10 min gap for this — or when the sun is down, or after 3 min of grid import ≥ 400 W (`binary_sensor.solar_soak_grid_free`, so a passing cloud doesn't stop a charge). Sets Ohme to `paused`. Other mode changes are at least 10 min apart (Ohme is cloud-controlled).
 - **Mode switch:** turning `ev_solar_soak` on switches Ohme "Require approval" off (nobody to press Approve); turning it off switches it back on.
 - Battery stays in normal self-consumption (no Modbus control needed).
 

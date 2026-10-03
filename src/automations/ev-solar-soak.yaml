@@ -4,9 +4,10 @@ description: |
   While nobody is home: charge the car from solar that would otherwise be wasted.
   Levels, not edges: every minute (and whenever either sensor changes) it checks
   binary_sensor.solar_soak_start_ok / solar_soak_keep_ok and acts only if the
-  charger is not already in the right mode. Both sensors are debounced (3 min) in
-  src/helpers/solar_soak.yaml, and Ohme mode changes are at least 10 min apart
-  because commands go through the Ohme cloud.
+  charger is not already in the right mode. Starting and the grid-use check are
+  debounced (3 min) in src/helpers/solar_soak.yaml. Ohme mode changes are at least 10 min apart because
+  commands go through the Ohme cloud, EXCEPT that hitting the battery floor stops
+  charging immediately: the battery falls ~1%/min with the car on.
   Needs input_boolean.ev_solar_soak on. Battery stays in normal self-consumption.
 
 triggers:
@@ -17,16 +18,15 @@ triggers:
   - trigger: time_pattern
     minutes: "/1"
 
-conditions:
-  # Ohme cloud commands are slow: leave at least 10 minutes between mode changes
-  - condition: template
-    value_template: >
-      {{ (now() - states.select.ohme_home_pro_delta_11kw_charge_mode.last_changed).total_seconds() >= 600 }}
+conditions: []
 
 actions:
   - choose:
       # Start: conditions have held, charger plugged in but not charging
       - conditions:
+          - condition: template
+            value_template: >
+              {{ (now() - states.select.ohme_home_pro_delta_11kw_charge_mode.last_changed).total_seconds() >= 600 }}
           - condition: state
             entity_id: binary_sensor.solar_soak_start_ok
             state: "on"
@@ -57,6 +57,16 @@ actions:
           - condition: state
             entity_id: select.ohme_home_pro_delta_11kw_charge_mode
             state: "max_charge"
+          # 10 min since the last mode change, unless the battery is at its floor
+          - condition: or
+            conditions:
+              - condition: template
+                value_template: >
+                  {{ (now() - states.select.ohme_home_pro_delta_11kw_charge_mode.last_changed).total_seconds() >= 600 }}
+              - condition: template
+                value_template: >
+                  {{ states('sensor.ecoflow_powerocean_battery_soc') | float(100)
+                     <= states('input_number.soak_soc_floor') | float(30) }}
         sequence:
           - action: select.select_option
             target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
