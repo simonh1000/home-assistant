@@ -101,7 +101,7 @@ Because HA resolves `!include_dir_*` paths relative to its config root, the depl
   * [x] Get more regular battery updates - modbus
 
 * [ ] Turn off battery discharge when car charging — drafted via Modbus (`ecoflow-battery-lock.yaml`/`ecoflow-battery-unlock.yaml`, on `sh/eco-flow` branch)
-  * [ ] Prevent the car consuming energy from the battery (either use enhanced mode and my personal password, or modbus) — see above, drafted not tested
+  * [ ] Prevent the car consuming energy from the battery — see above, drafted not tested
 
 * [ ] Get the car to take up the remaining capacity
 

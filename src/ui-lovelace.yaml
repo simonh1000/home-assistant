@@ -14,7 +14,7 @@ views:
             icon: mdi:battery-charging
           - type: entities
             entities:
-              - entity: switch.garage_ecoflow_powerocean_modbus_control
+              - entity: switch.ecoflow_powerocean_modbus_control
                 name: Modbus Control
               - entity: select.ecoflow_powerocean_battery_mode
                 name: Battery Mode
