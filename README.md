@@ -19,12 +19,12 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ### 1. [ev-capacity-guardian.yaml](src/automations/ev-capacity-guardian.yaml)
 
 - **Power Guard:** Pauses EV if house draw > 6.0 kW for 30 seconds (`ev_guardian_state: yielding`).
-- **Dinner Lockout:** Automatically pauses EV daily from **18:15 to 20:00** (unless overridden by `ev_cooking_over`).
+- **Dinner Lockout:** Automatically pauses EV daily from **18:15 to 20:15** (`ev_guardian_state: cooking`). If a load pause (`yielding`/`cooldown`) is already running at 18:15 it hands over to `cooking`; at 20:15 `cooking` returns to `idle` and a paused EV resumes.
 - **Smart Resume:** Moves to `cooldown` state after 2 minutes under 500W, and resumes charging once quiet for 10 minutes total or via the 22:30 safety net.
 
-### 2. [ev-cooking-over.yaml](src/automations/ev-cooking-over.yaml)
+### 2. [ev-cooking-over-button-handler.yaml](src/automations/ev-cooking-over-button-handler.yaml)
 
-- **Manual Resume:** Resumes EV charging immediately when the "Cooking Over" button is pressed, ending any dinner lockout or yielding state.
+- **Manual Resume:** Resumes EV charging immediately when the "Done Cooking" button is pressed, transitioning `cooking` state to `idle`.
 
 ### 3. [ev-approval-notifier.yaml](src/automations/ev-approval-notifier.yaml)
 
@@ -76,7 +76,7 @@ The dashboard includes:
 
 - **Automations:** Files in `src/automations/*.yaml` are copied as-is to `dist/src/automations/`. `configuration.yaml` picks them up with `!include_dir_list src/automations`, so each file must contain a single automation (with a stable `id:` field).
 - **Scripts:** Files in `src/scripts/*.yaml` are copied as-is to `dist/src/scripts/`. `configuration.yaml` picks them up with `!include_dir_merge_named src/scripts`, so each file's content must be nested under a single top-level key matching the script's id (e.g. `notify_simon:`).
-- **Helpers & Config:** `src/helpers.yaml` and `src/configuration.yaml` are copied to `dist/`.
+- **Helpers & Config:** Files in `src/helpers/` are copied to `dist/helpers/`, and `src/configuration.yaml` to `dist/`.
 - **Web Assets:** Files in `src/www/` are copied to `dist/www/`.
 
 Because HA resolves `!include_dir_*` paths relative to its config root, the deployed HA config directory needs a `src/automations/` and `src/scripts/` folder of its own — `combine.py --deploy` uploads `dist/src/` (via `rsync --delete`, so files removed locally are also removed on the HA host) alongside the usual flat files.

@@ -38,12 +38,20 @@ views:
               - **Cooking**: Paused for the dinner window (18:15 to 20:15), or until you press Done.
               - **Yielding**: Paused because house load crossed **6.0kW**. Stays here until the house is quiet.
               - **Cooldown**: Load has been under 500W for 2 minutes. Waiting for the 10-minute total yielding timer to elapse before resuming.
+
+              ---
+
+              **Click Done after finished cooking to permit car charging.**
           - type: entities
             entities:
+              # Short name on purpose: entity-row names truncate on mobile. The longer
+              # explanation sits in the markdown card above, which wraps.
               - type: button
-                entity: input_boolean.ev_cooking_over
-                name: Click after finished cooking to permit car charging
+                name: Cooking finished
                 icon: mdi:stove
                 action_name: Done
                 tap_action:
-                  action: toggle
+                  action: perform-action
+                  perform_action: automation.trigger
+                  target:
+                    entity_id: automation.ev_cooking_over_button
