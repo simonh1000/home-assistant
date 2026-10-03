@@ -13,7 +13,7 @@ logging.getLogger("asyncio").setLevel(logging.WARNING)
 pytest_plugins = ["pytest_homeassistant_custom_component"]
 
 GUARDIAN_YAML_PATH = Path(__file__).parent.parent / "src" / "automations" / "ev-capacity-guardian.yaml"
-COOKING_OVER_YAML_PATH = Path(__file__).parent.parent / "src" / "automations" / "ev-cooking-over.yaml"
+COOKING_OVER_YAML_PATH = Path(__file__).parent.parent / "src" / "automations" / "ev-cooking-over-button-handler.yaml"
 
 @pytest.fixture
 def expected_lingering_timers() -> bool:

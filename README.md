@@ -22,7 +22,7 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 - **Dinner Lockout:** Automatically pauses EV daily from **18:15 to 20:15** (`ev_guardian_state: cooking`). If a load pause (`yielding`/`cooldown`) is already running at 18:15 it hands over to `cooking`; at 20:15 `cooking` returns to `idle` and a paused EV resumes.
 - **Smart Resume:** Moves to `cooldown` state after 2 minutes under 500W, and resumes charging once quiet for 10 minutes total or via the 22:30 safety net.
 
-### 2. [ev-cooking-over.yaml](src/automations/ev-cooking-over.yaml)
+### 2. [ev-cooking-over-button-handler.yaml](src/automations/ev-cooking-over-button-handler.yaml)
 
 - **Manual Resume:** Resumes EV charging immediately when the "Done Cooking" button is pressed, transitioning `cooking` state to `idle`.
 
