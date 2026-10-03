@@ -39,7 +39,7 @@ input_select:
       - cooking
       - yielding
       - cooldown
-    icon: mdi:ev-station
+    icon: mdi:ev-plug-type2
 
 input_text:
   config_version:

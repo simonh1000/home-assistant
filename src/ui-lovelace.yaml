@@ -41,9 +41,11 @@ views:
           - type: entities
             entities:
               - type: button
-                entity: input_boolean.ev_cooking_over
                 name: Click after finished cooking to permit car charging
                 icon: mdi:stove
                 action_name: Done
                 tap_action:
-                  action: toggle
+                  action: perform-action
+                  perform_action: automation.trigger
+                  target:
+                    entity_id: automation.ev_cooking_over_button_handler
