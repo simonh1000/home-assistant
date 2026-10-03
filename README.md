@@ -18,6 +18,8 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 
 ### 1. [ev-capacity-guardian.yaml](src/automations/ev-capacity-guardian.yaml)
 
+> **Currently dormant (holiday mode):** all triggers are commented out so it cannot resume charging and fight the solar-soak controller. See the header in the file for how to re-enable it.
+
 - **Power Guard:** Pauses EV if house draw > 6.0 kW for 30 seconds (`ev_guardian_state: yielding`).
 - **Dinner Lockout:** Automatically pauses EV daily from **18:15 to 20:15** (`ev_guardian_state: cooking`). If a load pause (`yielding`/`cooldown`) is already running at 18:15 it hands over to `cooking`; at 20:15 `cooking` returns to `idle` and a paused EV resumes.
 - **Smart Resume:** Moves to `cooldown` state after 2 minutes under 500W, and resumes charging once quiet for 10 minutes total or via the 22:30 safety net.
@@ -41,6 +43,14 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ### 6. [ev-charge-completed.yaml](src/automations/ev-charge-completed.yaml)
 
 - **Charge Completion:** Sends a notification to both phones when the Ohme charger finishes charging outside of Guardian pauses.
+
+### 7. [ev-solar-soak.yaml](src/automations/ev-solar-soak.yaml), [ev-solar-soak-mode.yaml](src/automations/ev-solar-soak-mode.yaml) & [solar_soak.yaml](src/helpers/solar_soak.yaml)
+
+- **Solar soak (while away):** charges the car from solar that would otherwise be exported, so no energy is wasted. The battery covers the gap between solar and the charger's 6 A minimum (~4.1 kW).
+- **Start** (`binary_sensor.solar_soak_start_ok`, held 3 min): `ev_solar_soak` on, car plugged in, battery ≥ `soak_soc_start` (90 %), at least `soak_min_hours_left` (3 h) of daylight left, and solar + available battery discharge ≥ house + car draw. Sets Ohme to `max_charge`.
+- **Stop** (`binary_sensor.solar_soak_keep_ok`, off for 3 min): battery ≤ `soak_soc_floor` (25 %), sun down, or grid import ≥ 400 W. Sets Ohme to `paused`. Mode changes are at least 10 min apart.
+- **Mode switch:** turning `ev_solar_soak` on switches Ohme "Require approval" off (nobody to press Approve); turning it off switches it back on.
+- Battery stays in normal self-consumption (no Modbus control needed).
 
 ---
 
@@ -103,7 +113,7 @@ Because HA resolves `!include_dir_*` paths relative to its config root, the depl
 * [ ] Turn off battery discharge when car charging — drafted via Modbus (`ecoflow-battery-lock.yaml`/`ecoflow-battery-unlock.yaml`, on `sh/eco-flow` branch)
   * [ ] Prevent the car consuming energy from the battery — see above, drafted not tested
 
-* [ ] Get the car to take up the remaining capacity
+* [ ] Get the car to take up the remaining capacity — drafted as solar soak (see above); thresholds to be tuned from real days, `max_charge` starting immediately is unverified
 
 * [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
 

@@ -1,0 +1,70 @@
+id: ev_solar_soak
+alias: "EV: Solar Soak"
+description: |
+  While nobody is home: charge the car from solar that would otherwise be wasted.
+  Levels, not edges: every minute (and whenever either sensor changes) it checks
+  binary_sensor.solar_soak_start_ok / solar_soak_keep_ok and acts only if the
+  charger is not already in the right mode. Both sensors are debounced (3 min) in
+  src/helpers/solar_soak.yaml, and Ohme mode changes are at least 10 min apart
+  because commands go through the Ohme cloud.
+  Needs input_boolean.ev_solar_soak on. Battery stays in normal self-consumption.
+
+triggers:
+  - trigger: state
+    entity_id:
+      - binary_sensor.solar_soak_start_ok
+      - binary_sensor.solar_soak_keep_ok
+  - trigger: time_pattern
+    minutes: "/1"
+
+conditions:
+  # Ohme cloud commands are slow: leave at least 10 minutes between mode changes
+  - condition: template
+    value_template: >
+      {{ (now() - states.select.ohme_home_pro_delta_11kw_charge_mode.last_changed).total_seconds() >= 600 }}
+
+actions:
+  - choose:
+      # Start: conditions have held, charger plugged in but not charging
+      - conditions:
+          - condition: state
+            entity_id: binary_sensor.solar_soak_start_ok
+            state: "on"
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+                state: "max_charge"
+        sequence:
+          - action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: max_charge }
+          - action: script.notify_simon
+            data:
+              title: "Solar Soak: Charging"
+              message: >
+                [{{ now().strftime('%H:%M') }}] Battery {{ states('sensor.ecoflow_powerocean_battery_soc') }}%,
+                solar {{ states('sensor.ecoflow_powerocean_solar_power') }} W: car charging from surplus.
+
+      # Stop: soak mode on, charging, but it is no longer free (battery low, grid in use, sun gone)
+      - conditions:
+          - condition: state
+            entity_id: input_boolean.ev_solar_soak
+            state: "on"
+          - condition: state
+            entity_id: binary_sensor.solar_soak_keep_ok
+            state: "off"
+          - condition: state
+            entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+            state: "max_charge"
+        sequence:
+          - action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: paused }
+          - action: script.notify_simon
+            data:
+              title: "Solar Soak: Paused"
+              message: >
+                [{{ now().strftime('%H:%M') }}] Battery {{ states('sensor.ecoflow_powerocean_battery_soc') }}%,
+                grid {{ states('sensor.p1_meter_power') }} W: car paused.
+mode: single

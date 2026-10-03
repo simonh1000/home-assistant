@@ -55,3 +55,29 @@ views:
                   perform_action: automation.trigger
                   target:
                     entity_id: automation.ev_cooking_over_button
+
+      - type: grid
+        background:
+          color: "#ffb74d"   # light amber
+          opacity: 40
+        cards:
+          - type: heading
+            heading: Solar Soak (away)
+            icon: mdi:solar-power-variant
+          - type: markdown
+            content: |
+              Charges the car from solar that would otherwise be wasted, using the battery to
+              cover the gap. **Starts** when the battery is at or above the start level, enough
+              daylight is left and solar plus battery can carry the car. **Stops** at the floor
+              level, when the sun is gone, or if the grid is being used.
+          - type: entities
+            entities:
+              - entity: input_boolean.ev_solar_soak
+                name: Solar soak on
+              - entity: binary_sensor.solar_soak_start_ok
+                name: Start conditions met
+              - entity: binary_sensor.solar_soak_keep_ok
+                name: OK to keep charging
+              - entity: input_number.soak_soc_start
+              - entity: input_number.soak_soc_floor
+              - entity: input_number.soak_min_hours_left

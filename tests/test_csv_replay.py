@@ -5,6 +5,10 @@ import pytest
 import homeassistant.util.dt as dt_util
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
+# Guardian triggers are commented out while away (see src/automations/ev-capacity-guardian.yaml).
+# Remove this line when re-enabling it.
+pytestmark = pytest.mark.skip(reason="guardian dormant while away")
+
 CSV_PATH = Path(__file__).parent / "test1.csv"
 
 
