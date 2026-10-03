@@ -29,7 +29,7 @@ actions:
         actions:
           - action: "OHME_APPROVE"
             title: "Approve"
-  - action: notify.mobile_app_pixel_8
+  - action: notify.mobile_app_partner
     data:
       title: "EV Charge Still Needs Approval"
       message: >
