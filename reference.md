@@ -151,11 +151,11 @@ sensor.p1_meter_peak_demand_current_month: n/a
 - number.ecoflow_powerocean_led_brightness (%)
 - select.ecoflow_powerocean_battery_mode ["automatic",....]
 - switch.ecoflow_powerocean_battery_saver_mode
-- switch.garage_ecoflow_powerocean_modbus_control (toggle; note the `garage_` prefix)
+- switch.ecoflow_powerocean_modbus_control (toggle; renamed from `switch.garage_ecoflow_powerocean_modbus_control`)
 
 ### ModBus control: step 1 of any automation that commands the battery
 
-**Turn `switch.garage_ecoflow_powerocean_modbus_control` on before sending any command.** While it is off the inverter runs on EcoFlow's own logic (app modes and schedules) and ignores commands from HA, so changing the entities below has no effect:
+**Turn `switch.ecoflow_powerocean_modbus_control` on before sending any command.** While it is off the inverter runs on EcoFlow's own logic (app modes and schedules) and ignores commands from HA, so changing the entities below has no effect:
 
 - `select.ecoflow_powerocean_battery_mode`
 - `number.ecoflow_powerocean_charge_power`, `discharge_power`, `export_power`
@@ -167,7 +167,7 @@ Reading sensors works either way. Check `binary_sensor.ecoflow_powerocean_modbus
 Notes for automation authors:
 - Confirmed: with the switch off the commands above do not take effect; with it on they do.
 - Not verified: what the inverter does if HA stops while it is in control (the Modbus map has a `heartbeat` register, 40608, which suggests it expects regular contact). Prefer turning control on only while a command is needed, and turning it off again afterwards, rather than leaving it on permanently.
-- Entity IDs in this device carry a `garage_` prefix in places (the switch does); check the exact ID in Developer Tools -> States rather than assuming.
+- Some entities on this device (about two dozen, e.g. `sensor.garage_ecoflow_powerocean_grid_side_voltage_l1`, `binary_sensor.garage_ecoflow_powerocean_modbus_control_device`, `switch.garage_ecoflow_powerocean_grid_feed_in`) carry a `garage_` prefix while the rest do not. Check the exact ID in Developer Tools -> States rather than assuming.
 
 ### API only
 

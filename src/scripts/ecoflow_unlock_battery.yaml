@@ -11,5 +11,5 @@ ecoflow_unlock_battery:
         option: automatic
     - action: switch.turn_off
       target:
-        entity_id: switch.garage_ecoflow_powerocean_modbus_control
+        entity_id: switch.ecoflow_powerocean_modbus_control
   mode: single
