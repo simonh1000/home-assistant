@@ -3,6 +3,10 @@ from datetime import timedelta
 import homeassistant.util.dt as dt_util
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
+# Guardian triggers are commented out while away (see src/automations/ev-capacity-guardian.yaml).
+# Remove this line when re-enabling it.
+pytestmark = pytest.mark.skip(reason="guardian dormant while away")
+
 async def test_high_load_pauses_ev(hass, setup_ha_guardian, freezer):
     """Test sustained high load (>6kW for 30s) while EV is charging pauses EV."""
     service_calls = setup_ha_guardian

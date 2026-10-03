@@ -1,12 +1,17 @@
-# Home Assistant Automations: 6kW Capacity Guardian
+# Home Assistant Automations: 
 
-This system manages EV charging and house load to ensure an approx **6.0 kW** monthly average peak in Flanders, Belgium.
+## Objectives
 
-The car currently is set to limit charging to 8A
+1) Guardian: Flemish capacity-tariff peak control : keep home charging compatible with a 6kw peak 
 
-## 🧠 The Logic (15-Min Window)
+2) Do not return energy to Fluvius, as it financially worthless
+  - Use car to soak up surplus solar energy
 
-To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
+3) Take advantage of overnight charging using the electricity company app to get better overnight prices.
+
+## 6kW Capacity Guardian
+
+This system manages EV charging and house load to ensure an approx **6.0 kW** monthly average peak in Flanders, Belgium. To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 
 - **Active Defense:** We monitor for **5 minutes above 6.5kW**.
 - **Automatic Response:** If triggered, the EV charger is paused immediately.
@@ -17,6 +22,8 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ## 📂 Core Automations
 
 ### 1. [ev-capacity-guardian.yaml](src/automations/ev-capacity-guardian.yaml)
+
+> **Currently dormant (holiday mode):** all triggers are commented out so it cannot resume charging and fight the solar-soak controller. See the header in the file for how to re-enable it.
 
 - **Power Guard:** Pauses EV if house draw > 6.0 kW for 30 seconds (`ev_guardian_state: yielding`).
 - **Dinner Lockout:** Automatically pauses EV daily from **18:15 to 20:15** (`ev_guardian_state: cooking`). If a load pause (`yielding`/`cooldown`) is already running at 18:15 it hands over to `cooking`; at 20:15 `cooking` returns to `idle` and a paused EV resumes.
@@ -41,6 +48,83 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ### 6. [ev-charge-completed.yaml](src/automations/ev-charge-completed.yaml)
 
 - **Charge Completion:** Sends a notification to both phones when the Ohme charger finishes charging outside of Guardian pauses.
+
+### 7. [ev-solar-soak.yaml](src/automations/ev-solar-soak.yaml), [ev-solar-soak-mode.yaml](src/automations/ev-solar-soak-mode.yaml) & [solar_soak.yaml](src/helpers/solar_soak.yaml)
+
+- **Solar soak (while away):** charges the car from solar that would otherwise be exported, so no energy is wasted. The battery covers the gap between solar and the charger's 6 A minimum (~4.1 kW).
+- **Start** (`binary_sensor.solar_soak_start_ok`, held 1 min): `ev_solar_soak` on, car plugged in, battery ≥ `soak_soc_start` (90 %), at least `soak_min_hours_left` (3 h) of daylight left, and solar + available battery discharge ≥ house + car draw. Sets Ohme to `max_charge`.
+- **Stop** (`binary_sensor.solar_soak_keep_ok`): **at once** when the battery reaches `soak_soc_floor` (30 %) — the battery falls ~1 %/min with the car on, so there is no debounce and no 10 min gap for this — or when the sun is down, or after 3 min of grid import ≥ 400 W (`binary_sensor.solar_soak_grid_free`, so a passing cloud doesn't stop a charge). Sets Ohme to `paused`. Other mode changes are at least 10 min apart (Ohme is cloud-controlled).
+- **Ohme drops offline sometimes, so stops are verified.** After setting `paused` the controller waits up to 90 s for confirmation (mode `paused` or no longer `charging`), retries once, and sends **"Solar Soak: COULD NOT PAUSE"** if it still cannot. Stop the car from its own app in that case.
+- **Watchdog** (`ev-solar-soak-watchdog.yaml`, `binary_sensor.solar_soak_stuck`): if soak is on, Ohme says `charging` and the car should have stopped (battery at the floor, grid in use, sun gone, or Ohme offline) for 3 minutes, you get **"Solar Soak: car may still be charging"**, repeated every 15 minutes until it clears.
+- The battery floor has hysteresis (3 points) so a level hovering at the floor does not flicker; the controller is `queued` so a trigger is not dropped while another run is waiting; 30 automation traces are kept for diagnosing failures.
+- **Mode switch:** turning `ev_solar_soak` on switches Ohme "Require approval" off (nobody to press Approve); turning it off switches it back on.
+- Battery stays in normal self-consumption (no Modbus control needed).
+
+---
+
+## 🧭 State Machines
+
+Two machines run side by side and both write the same thing: Ohme's `charge_mode`. (GitHub renders these diagrams; the ASCII version in `src/helpers/guardian.yaml` is kept for people reading the YAML.)
+
+### Guardian (`input_select.ev_guardian_state`) — dormant while away
+
+```mermaid
+stateDiagram-v2
+    [*] --> idle
+    idle --> yielding: house above 6 kW for 30 s / pause EV
+    yielding --> cooldown: house below 500 W for 2 min
+    cooldown --> yielding: house above 800 W for 15 s
+    yielding --> idle: 10 min in state and quiet, outside dinner / resume
+    cooldown --> idle: 10 min in state and quiet, outside dinner / resume
+    idle --> cooking: 18:15 / pause EV
+    yielding --> cooking: 18:15
+    cooldown --> cooking: 18:15
+    cooking --> idle: 20:15 or Done Cooking / resume
+    note right of cooking
+        EV is paused again whenever it starts
+        charging while in this state.
+        22:30 safety net: any state goes to idle
+        and a paused EV resumes.
+    end note
+```
+
+### Solar soak (`ev_solar_soak` + binary sensors)
+
+```mermaid
+stateDiagram-v2
+    [*] --> off
+    off --> waiting: soak switched on, Ohme approval off
+    waiting --> charging: start_ok for 1 min / Ohme max_charge
+    charging --> waiting: keep_ok off / Ohme paused, verified and retried
+    charging --> stuck: still charging 3 min after it should have stopped
+    stuck --> waiting: charging stops
+    waiting --> off: soak switched off, Ohme approval on
+    charging --> off: soak switched off, a running charge is NOT stopped
+    note right of waiting
+        start_ok: battery at least 90 percent,
+        3 h of daylight left, car plugged in,
+        solar plus battery can carry house and car
+    end note
+    note right of charging
+        keep_ok off: battery at the floor (30 percent,
+        immediate), sun down, or grid import above
+        400 W for 3 min. Alert every 15 min while stuck.
+    end note
+```
+
+### The shared resource: Ohme charge mode
+
+```mermaid
+flowchart LR
+    G[Guardian] -->|"paused / smart_charge"| M{{"Ohme charge_mode"}}
+    S[Solar soak] -->|"max_charge / paused"| M
+    D[Done Cooking button] -->|smart_charge| M
+    U[You, Ohme app] --> M
+    M --> C[Ohme cloud, can be offline]
+    C --> Car
+```
+
+While away the guardian's triggers are commented out, so only solar soak (and you) write to the mode. See the header of `src/automations/ev-capacity-guardian.yaml` to bring it back.
 
 ---
 
@@ -103,7 +187,10 @@ Because HA resolves `!include_dir_*` paths relative to its config root, the depl
 * [ ] Turn off battery discharge when car charging — drafted via Modbus (`ecoflow-battery-lock.yaml`/`ecoflow-battery-unlock.yaml`, on `sh/eco-flow` branch)
   * [ ] Prevent the car consuming energy from the battery — see above, drafted not tested
 
-* [ ] Get the car to take up the remaining capacity
+* [ ] Get the car to take up the remaining capacity — drafted as solar soak (see above); thresholds to be tuned from real days, `max_charge` starting immediately is unverified
+
+* [ ] **Ohme's power sensor sometimes reads a third of the real power.** From the recorder history, `sensor.ohme_home_pro_delta_11kw_power` normally equals 3 × current × voltage (29–30 Sep at 6 A: 4.13 kW from 5.84 A × 236 V; 2 Oct at 8 A: 5.57 kW from 7.83 A × 237 V). During the first solar-soak session (3 Oct 12:10, started with `max_charge`, battery supplying most of the power) it read 1.36 kW from 5.77 A × 235 V, i.e. 1 × current × voltage, although the car reported 6 A on three phases (~4.1 kW, matching EcoFlow `house_power`). Cause unknown; the current and voltage sensors look right in both cases. So do **not** multiply the power sensor by 3 (it is right in normal sessions). A template sensor `3 × current × voltage` would be correct in both. Check which entity the energy/power-flow card uses for the car. The solar-soak controller does not read Ohme's power.
+  * Confirmed on the same test: the 6 A cap is in effect, and `max_charge` starts a session within seconds.
 
 * [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
 

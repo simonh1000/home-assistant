@@ -1,0 +1,1579 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Warmtepomp (lucht-lucht) — Checklist</title>
+    <style>
+      :root {
+        --ink: #111;
+        --muted: #555;
+        --line: #ddd;
+        --bg: #fafafa;
+        --card: #fff;
+        --accent: #c9a300;
+        --accent-bg: #fff7e0;
+        --context-bg: #f4f4f4;
+        --context-line: #999;
+        --done-bg: #eefbea;
+        --done-line: #4caf50;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+        margin: 0;
+        padding: 14px 14px 40px;
+        line-height: 1.35;
+      }
+      header {
+        border-bottom: 2px solid var(--ink);
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+      }
+      h1 {
+        font-size: 19px;
+        margin: 0 0 2px 0;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 6px 0;
+      }
+      .meta {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .meta b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      section {
+        margin-bottom: 18px;
+      }
+      .sec-head {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        background: var(--ink);
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+      .sec-head .num {
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .sec-head .nl {
+        font-size: 14.5px;
+        font-weight: 700;
+      }
+      .sec-head .en {
+        font-size: 12px;
+        font-style: italic;
+        color: #ccc;
+      }
+      .context {
+        font-size: 12.5px;
+        color: #333;
+        background: var(--context-bg);
+        border-left: 3px solid var(--context-line);
+        padding: 7px 10px;
+        border-radius: 0 4px 4px 0;
+        margin: 0 0 10px 0;
+      }
+      .context .en {
+        color: var(--muted);
+        font-style: italic;
+        display: block;
+        margin-top: 3px;
+      }
+      .highlight {
+        font-size: 12.5px;
+        background: var(--accent-bg);
+        border-left: 3px solid var(--accent);
+        padding: 9px 11px;
+        border-radius: 0 4px 4px 0;
+        margin: 0 0 10px 0;
+      }
+      .highlight .label {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .highlight .en {
+        color: #6b5900;
+        font-style: italic;
+        display: block;
+        margin-top: 6px;
+      }
+      .item {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .item.done {
+        background: var(--done-bg);
+        border-color: var(--done-line);
+      }
+      .item-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .q-nl {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .qnum {
+        display: inline-block;
+        min-width: 30px;
+        margin-right: 6px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: var(--ink);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+      }
+      .q-en {
+        font-style: italic;
+        color: var(--muted);
+        font-size: 12.5px;
+        margin-top: 2px;
+      }
+      .notes {
+        width: 100%;
+        margin-top: 8px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        font-family: inherit;
+        font-size: 14px;
+        padding: 7px 8px;
+        resize: vertical;
+        min-height: 34px;
+      }
+      .notes::placeholder {
+        color: #aaa;
+        font-style: italic;
+      }
+      .subrow {
+        margin-top: 8px;
+      }
+      .subrow-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 3px;
+      }
+      .subrow-label .en {
+        font-weight: 400;
+        font-style: italic;
+        color: var(--muted);
+      }
+      .choice-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .choice {
+        position: relative;
+      }
+      .choice input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        inset: 0;
+        margin: 0;
+        cursor: pointer;
+      }
+      .choice span {
+        display: inline-block;
+        padding: 6px 13px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        font-size: 13px;
+        background: #fff;
+        color: var(--ink);
+      }
+      .choice input[type="radio"]:checked + span {
+        background: var(--done-line);
+        border-color: var(--done-line);
+        color: #fff;
+        font-weight: 600;
+      }
+      footer {
+        margin-top: 10px;
+        font-size: 11px;
+        color: #999;
+        text-align: center;
+      }
+      .savehint {
+        font-size: 11px;
+        color: #999;
+        text-align: center;
+        margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Warmtepomp (lucht-lucht) — checklist</h1>
+      <p class="subtitle">Heat pump (air-to-air) — installer checklist</p>
+      <div class="meta">
+        <b>Oktober 2026</b> · Wezembeek-Oppem, Vlaanderen
+      </div>
+    </header>
+
+    <div class="highlight">
+      <span class="label">Woordenlijst / Vocabulary — wat is wat?</span>
+      <b>Warmtepomp</b> = elk toestel dat warmte verplaatst (verwarmen én koelen
+      mogelijk). <b>Airco</b> (lucht-lucht warmtepomp, "split") =
+      buitenunit + wandunits in de kamer; blaast warme of koude lucht; dit is wat
+      we nu kiezen voor de 70 m². <b>Lucht-water warmtepomp</b> = buitenunit die
+      het water voor de radiatoren verwarmt; mogelijke latere vervanging van de
+      gasketel. <b>HVAC</b> = Amerikaanse overkoepelende term (heating,
+      ventilation, air conditioning).
+      <span class="en"
+        ><b>Heat pump</b> = any device that moves heat (can heat and cool).
+        <b>"Airco"</b> = air-to-air heat pump / split: outdoor unit + wall units
+        blowing warm or cold air; today's choice for the 70 sqm.
+        <b>Air-to-water heat pump</b> = outdoor unit heating the water for the
+        radiators; possible later gas-boiler replacement. <b>HVAC</b> = US
+        umbrella term. Almost every modern airco is reversible, so insist on
+        "heating AND cooling" when asking for quotes.</span
+      >
+    </div>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">1</span>
+        <span class="nl">Hun strategie &amp; lokale ervaring</span>
+        <span class="en">Their strategy &amp; local experience</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> eerst luisteren. Laat de installateur zijn eigen totaalaanpak
+        voorstellen voor dit huis, vóór we cijfers of opties noemen. Wat leren we
+        uit zijn ervaring met Vlaamse woningen? Cijfers die we ook kunnen
+        opzoeken, vragen we schriftelijk (laatste vraag).
+        <span class="en"
+          ><b>Aim:</b> listen first. Let the installer propose their own overall
+          approach for this house before we mention numbers or options. What can
+          we learn from their experience with Flemish homes? Figures we could
+          research ourselves are requested in writing (last question).</span
+        >
+      </div>
+
+      <div class="highlight">
+        <span class="label">Onze briefing (kort) / Our brief (short)</span>
+        30 jaar oud huis, nieuw geïsoleerd dak (R 5,7), radiatoren, gas nu
+        ~17.600 kWh/jaar. Leefzone ±70 m² (living, keuken, hoofdslaapkamer)
+        koelen én verwarmen; 21°C in de winter. Nu 2 bewoners, later verkoop
+        aan een gezin; budget geen beperking. Mogelijke latere lucht-water
+        warmtepomp voor de radiatoren. Zonnepanelen + batterij aanwezig, maar
+        winter en zon vallen niet samen.
+        <span class="en"
+          >30-year-old house, newly insulated roof (R 5.7), radiators, gas
+          currently ~17,600 kWh/yr. ~70 sqm living zone (lounge, kitchen, master
+          bedroom) to cool and heat; 21°C in winter. 2 occupants now, sale to a
+          family later; budget not a constraint. Possible later air-to-water heat
+          pump for the radiators. Solar + battery installed, but winter and sun
+          don't coincide.</span
+        >
+      </div>
+
+      <div class="item" data-id="strategy-overall">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">1.1</span>Wat is uw voorgestelde totaalaanpak voor dit huis, en waarom? Wat zou u doen als het uw eigen huis was?</div>
+            <div class="q-en">What is your proposed overall approach for this house, and why? What would you do if it were your own home?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-overall-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Hun plan in eigen woorden… — Their plan in their own words…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="strategy-challenge">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">1.2</span>Waar zit volgens u het grootste risico of de zwakke plek in ons plan (airco voor de leefzone nu, lucht-water warmtepomp later)? Zou u iets anders aanpakken?</div>
+            <div class="q-en">Where do you see the biggest risk or weak spot in our plan (airco for the living zone now, air-to-water later)? Would you do anything differently?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-challenge-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Kritiek, alternatieven… — Pushback, alternatives…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="strategy-cold-days">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">1.3</span>Hoe pakt u de paar koudste dagen aan, zonder het systeem te groot te maken voor de rest van het jaar? (Wat gebeurt er bij -10°C?)</div>
+            <div class="q-en">How do you handle the few coldest days without oversizing the system for the rest of the year? (What happens at -10°C?)</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-cold-days-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Backup-aanpak: radiatoren/gasketel, elektrisch, niets… — Backup approach…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="strategy-sizing-basis">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">1.4</span>Op welke basis bepaalt u de grootte: warmteverliesberekening of ervaring met vergelijkbare Vlaamse woningen? Wat zijn uw typische valkuilen (te groot, te klein)?</div>
+            <div class="q-en">On what basis do you size: a heat-loss calculation or experience with comparable Flemish homes? What are your typical pitfalls (too big, too small)?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-sizing-basis-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Methode, ervaringsregels… — Method, rules of thumb…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="strategy-local-experience">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">1.5</span>Welke merken verkoopt en installeert u zelf, en zijn er merken waar u niet voor gecertificeerd bent? Wie doet de service bij een storing (u of de fabrikant)? Kunnen wij 1–2 referentieklanten met een vergelijkbare installatie van minstens 2 jaar oud contacteren?
+            </div>
+            <div class="q-en">
+              Which brands do you sell and install, and which are you not certified for? Who does the service when something fails (you or the manufacturer)? Can we contact 1–2 reference customers with a comparable installation at least 2 years old? (Brand reliability itself we research online; this question is about their incentives and track record.)
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-local-experience-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Merken, service, referenties (naam, telefoon)… — Brands, service, references (name, phone)…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="strategy-sequencing">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">1.6</span>Hoe voorkomt u dat we later iets dubbel doen als we een lucht-water warmtepomp toevoegen (elektrische kast, doorboringen, buitenplaats, leidingwerk)? Wat moet nu al voorbereid worden?</div>
+            <div class="q-en">How do you make sure we do not redo work when we add an air-to-water heat pump later (electrical panel, wall penetrations, outdoor placement, piping)? What should be prepared now?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-sequencing-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Volgorde, voorbereiding… — Sequence, preparation…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="strategy-belgium">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">1.7</span>Wat is belangrijk in België/Vlaanderen dat wij mogelijk missen: premies, capaciteitstarief en digitale meter, geluidsnormen, vergunningen, wat u in de praktijk ziet gebeuren?</div>
+            <div class="q-en">What matters in Belgium/Flanders that we might be missing: subsidies, capacity tariff and digital meter, noise rules, permits, what you see happening in practice?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-belgium-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Premies, regels, tips… — Subsidies, rules, tips…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="strategy-ha">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">1.8</span>Hoe staat u tegenover lokale koppeling met Home Assistant (zonder cloud)? Welke merken en modellen laten dat in uw ervaring toe, en wat is de aanbevolen manier?</div>
+            <div class="q-en">How do you feel about local integration with Home Assistant (no cloud)? Which brands and models allow that in your experience, and what is the recommended way?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-ha-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Merk, koppelmodule, ervaring… — Brand, interface module, experience…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="strategy-missing">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">1.9</span>Wat zouden wij nog moeten vragen of beslissen, dat we niet gevraagd hebben?</div>
+            <div class="q-en">What should we be asking or deciding that we have not asked?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-missing-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Laatste ronde… — Final round…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="strategy-paperwork">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">1.10</span>Vraag schriftelijk: fabrikantengegevens (capaciteit en COP bij 0°C, -7°C, -10°C, -15°C), warmteverliesberekening, schema van de voorgestelde opstelling, offerte met uitgesplitste posten.</div>
+            <div class="q-en">Request in writing: manufacturer data (capacity and COP at 0°C, -7°C, -10°C, -15°C), heat-loss calculation, diagram of the proposed layout, itemised quote.</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="strategy-paperwork-done"
+                value="besproken"
+                onchange="saveChoice(this)"
+              /><span>Besproken — Discussed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Beloofd tegen wanneer… — Promised by when…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">2</span>
+        <span class="nl">Koudemiddel (refrigerant)</span>
+        <span class="en">Refrigerant</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> weten welk koudemiddel erin zit en wat dat betekent voor
+        klimaatimpact, veiligheid, regelgeving en onderhoud. Huidige standaard bij
+        airco's is R32; propaan (R290) is de natuurlijke, bijna-klimaatneutrale
+        optie, maar in lucht-lucht splits nog beperkt beschikbaar.
+        <span class="en"
+          ><b>Aim:</b> know which refrigerant is inside and what it means for
+          climate impact, safety, regulation and servicing. R32 is today's
+          standard in split aircos; propane (R290) is the natural, near-zero-GWP
+          option but still limited in air-to-air splits. Availability and EU
+          F-gas phase-down dates should be confirmed with the installer.</span
+        >
+      </div>
+
+      <div class="item" data-id="refrigerant-type">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">2.1</span>Welk koudemiddel gebruikt het voorgestelde toestel (R32, R410A, R290 propaan, ander)? GWP-waarde en vulhoeveelheid (kg)?</div>
+            <div class="q-en">Which refrigerant does the proposed unit use (R32, R410A, R290 propane, other)? GWP value and charge amount (kg)?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">Koudemiddel <span class="en">— Refrigerant</span></div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="refrigerant-type"
+                value="r290"
+                onchange="saveChoice(this)"
+              /><span>R290 (propaan) — propane</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="refrigerant-type"
+                value="r32"
+                onchange="saveChoice(this)"
+              /><span>R32</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="refrigerant-type"
+                value="r410a"
+                onchange="saveChoice(this)"
+              /><span>R410A (verouderd) — outdated</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="refrigerant-type"
+                value="ander"
+                onchange="saveChoice(this)"
+              /><span>Anders — Other</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="GWP, vulling (kg)… — GWP, charge (kg)…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="r290-availability">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">2.2</span>Is een R290-uitvoering beschikbaar bij het voorkeursmerk? Meerprijs, rendement (COP) en geluid t.o.v. R32? Zo niet: welke toekomstige modellen?</div>
+            <div class="q-en">Is an R290 version available from the preferred brand? Price premium, efficiency (COP) and noise vs R32? If not: which future models?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">R290 beschikbaar <span class="en">— R290 available</span></div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="r290-available"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja — Yes</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="r290-available"
+                value="later"
+                onchange="saveChoice(this)"
+              /><span>Binnenkort — Coming soon</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="r290-available"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Nee — No</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Modellen, meerprijs… — Models, price premium…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="refrigerant-safety">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">2.3</span>Veiligheid & regelgeving: brandbaarheidsklasse (R32 = A2L mild, R290 = A3), minimale kamergrootte voor de binneneenheden, vereiste certificering van de installateur, lekdetectie, EU F-gassenverordening?</div>
+            <div class="q-en">Safety & regulation: flammability class (R32 = A2L mild, R290 = A3), minimum room size for indoor units, installer certification required, leak detection, EU F-gas regulation?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">Installateur gecertificeerd <span class="en">— Installer certified</span></div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="installer-certified"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja (ook voor brandbaar koudemiddel) — Yes (incl. flammable)</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="installer-certified"
+                value="beperkt"
+                onchange="saveChoice(this)"
+              /><span>Enkel voor R32 — R32 only</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="installer-certified"
+                value="onbekend"
+                onchange="saveChoice(this)"
+              /><span>Onbekend — Unknown</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Certificaat, kamergroottelimiet, lekdetectie… — Certificate, room-size limit, leak detection…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="refrigerant-future">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">2.4</span>Toekomstbestendig: moet het koudemiddel later bijgevuld of vervangen worden (verbod/afbouw)? Wie vult bij en tegen welke kost?</div>
+            <div class="q-en">Future-proofing: will the refrigerant need to be topped up or replaced later (ban/phase-down)? Who recharges it and at what cost?</div>
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Servicekost, afbouwdata… — Service cost, phase-down dates…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">3</span>
+        <span class="nl">Installatie — Configuratie &amp; routing</span>
+        <span class="en">Installation — Configuration &amp; routing</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> fysieke opstelling bepalen — buiteneenheden, binneneenheden,
+        koelleiding, zichtbaarheid, toekomstproof voor lucht-water later.
+        <span class="en"
+          ><b>Aim:</b> determine physical setup — outdoor units, indoor units,
+          refrigerant lines, visibility, future-proof for air-to-water later.</span
+        >
+      </div>
+
+      <div class="item" data-id="outdoor-units">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">3.1</span>Aantal buiteneenheden: 1 groot (eenvoudig) of 2 kleinere (redundantie
+              + korter leidingwerk)?
+            </div>
+            <div class="q-en">
+              Number of outdoor units: 1 large (simple) or 2 smaller (redundancy
+              + shorter piping)?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="outdoor-units"
+                value="1-groot"
+                onchange="saveChoice(this)"
+              /><span>1 groot — 1 large</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="outdoor-units"
+                value="2-klein"
+                onchange="saveChoice(this)"
+              /><span>2 kleinere — 2 smaller</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Voorkeursoptie, voordelen… — Preferred option, benefits…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="indoor-config">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">3.2</span>Binneneenheid-indeling: multi-split (aparte koppelingen in woonkamer,
+              keuken, slaapkamer) of gemixt (een klein gedeeld kanaal + wandmodules)?
+            </div>
+            <div class="q-en">
+              Indoor unit layout: multi-split (separate heads in living room,
+              kitchen, bedroom) or mixed (shared ducting + wall units)?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="indoor-config"
+                value="multi-split"
+                onchange="saveChoice(this)"
+              /><span>Multi-split — Multi-split</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="indoor-config"
+                value="gemengd"
+                onchange="saveChoice(this)"
+              /><span>Gemengd — Mixed</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="indoor-config"
+                value="anders"
+                onchange="saveChoice(this)"
+              /><span>Anders — Other</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Kamers, zichtbaarheid, esthetiek… — Rooms, visibility, aesthetics…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="outdoor-placement">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">3.3</span>Plaatsing buiteneenheid(en): grond, muurbeugel, dak? Lawaai, toegang,
+              toekomstige onderhoud?
+            </div>
+            <div class="q-en">
+              Outdoor unit placement: ground, wall bracket, roof? Noise, access,
+              future maintenance?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="outdoor-placement"
+                value="grond"
+                onchange="saveChoice(this)"
+              /><span>Grond — Ground</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="outdoor-placement"
+                value="muur"
+                onchange="saveChoice(this)"
+              /><span>Muurbeugel — Wall bracket</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="outdoor-placement"
+                value="dak"
+                onchange="saveChoice(this)"
+              /><span>Dak — Roof</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Locatie, afstanden, omgeving… — Location, distances, surroundings…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="piping-routing">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">3.4</span>Koelleidingwerk: kunnen leiding(en) verborgen worden (dakwerk al
+              afgerond, dus mogelijkheden beperkt)? Externe routing acceptabel?
+            </div>
+            <div class="q-en">
+              Refrigerant piping: can lines be hidden (roof work already done,
+              so options are limited)? External routing acceptable?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="piping-routing"
+                value="verborgen"
+                onchange="saveChoice(this)"
+              /><span>Verborgen — Hidden</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="piping-routing"
+                value="extern"
+                onchange="saveChoice(this)"
+              /><span>Extern zichtbaar — External visible</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="piping-routing"
+                value="gemengd"
+                onchange="saveChoice(this)"
+              /><span>Gemengd — Mixed</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Schakeeroutes, extra kosten… — Routing options, extra costs…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">4</span>
+        <span class="nl">Besturing &amp; Home Assistant integratie</span>
+        <span class="en">Control &amp; Home Assistant integration</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> lokale besturing zonder cloud-lock-in; gegevens in real-time
+        beschikbaar voor Home Assistant en toekomstige optimalisaties.
+        <span class="en"
+          ><b>Aim:</b> local control without cloud lock-in; real-time data
+          available for Home Assistant and future optimizations.</span
+        >
+      </div>
+
+      <div class="highlight">
+        <span class="label"
+          >Home Assistant-integratie / HA Integration priorities</span
+        >
+        Voorkeur: <b>LocalTuya, Modbus, of open API</b> — vermijd cloud-only
+        propriëtaire apps. Minimale automatisering: pre-aankomst verwarming/koeling
+        (geofence/kalender), temperatuurmonitoring, efficiëntie-logging.
+        <span class="en"
+          >Preference: <b>LocalTuya, Modbus, or open API</b> — avoid cloud-only
+          proprietary apps. Minimum automation: pre-arrival heating/cooling (geofence/calendar),
+          temperature monitoring, efficiency logging.</span
+        >
+      </div>
+
+      <div class="item" data-id="brand-model">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">4.1</span>Merkkeuze: Mitsubishi Electric, Daikin, Panasonic? HA-compatibiliteit
+              lokaal (LocalTuya, Modbus, API)?
+            </div>
+            <div class="q-en">
+              Brand choice: Mitsubishi Electric, Daikin, Panasonic? HA
+              compatibility locally (LocalTuya, Modbus, API)?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">
+            Merk &amp; model <span class="en">— Brand &amp; model</span>
+          </div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="brand-choice"
+                value="mitsubishi"
+                onchange="saveChoice(this)"
+              /><span>Mitsubishi</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="brand-choice"
+                value="daikin"
+                onchange="saveChoice(this)"
+              /><span>Daikin</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="brand-choice"
+                value="panasonic"
+                onchange="saveChoice(this)"
+              /><span>Panasonic</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="brand-choice"
+                value="ander"
+                onchange="saveChoice(this)"
+              /><span>Ander — Other</span></label
+            >
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">
+            HA-integratie methode <span class="en">— HA integration method</span>
+          </div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ha-integration"
+                value="localtuya"
+                onchange="saveChoice(this)"
+              /><span>LocalTuya</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ha-integration"
+                value="modbus"
+                onchange="saveChoice(this)"
+              /><span>Modbus</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ha-integration"
+                value="api"
+                onchange="saveChoice(this)"
+              /><span>Open API</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="ha-integration"
+                value="cloud-only"
+                onchange="saveChoice(this)"
+              /><span>Cloud-only (niet ideaal) — Cloud-only (not ideal)</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Modelnummer, documentatie… — Model number, docs…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="thermostat-strategy">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">4.2</span>Thermostaatbeheer: ingebouwde unit-thermostaat, muurpaneel, of
+              remote control? Onafhankelijke zoneregeling per binneneenheid?
+            </div>
+            <div class="q-en">
+              Thermostat management: built-in unit thermostat, wall panel, or
+              remote? Independent zone control per indoor unit?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="thermostat-type"
+                value="ingebouwd"
+                onchange="saveChoice(this)"
+              /><span>Ingebouwd — Built-in</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="thermostat-type"
+                value="muurpaneel"
+                onchange="saveChoice(this)"
+              /><span>Muurpaneel — Wall panel</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="thermostat-type"
+                value="remote"
+                onchange="saveChoice(this)"
+              /><span>Remote control — Remote control</span></label
+            >
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="subrow-label">
+            Onafhankelijke zoneregeling <span class="en">— Independent zone control</span>
+          </div>
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="zone-control"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja — Yes</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="zone-control"
+                value="beperkt"
+                onchange="saveChoice(this)"
+              /><span>Beperkt — Limited</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="zone-control"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Nee — No</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Regellogica, voorkeur… — Control logic, preferences…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="real-time-data">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">4.3</span>Real-time gegevensbeschikbaarheid voor HA: werkelijk stroomverbruik,
+              compressor-status, COP, verwarmings-/koelcyclus informatie?
+            </div>
+            <div class="q-en">
+              Real-time data availability for HA: actual power consumption,
+              compressor status, COP, heating/cooling cycle info?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="realtime-data"
+                value="volledig"
+                onchange="saveChoice(this)"
+              /><span>Volledig — Full</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="realtime-data"
+                value="basis"
+                onchange="saveChoice(this)"
+              /><span>Basis (on/off, temp) — Basic (on/off, temp)</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="realtime-data"
+                value="cloud-polling"
+                onchange="saveChoice(this)"
+              /><span>Cloud polling alleen — Cloud polling only</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Beschikbare sensors/registers… — Available sensors/registers…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">5</span>
+        <span class="nl">Schoudermaanden</span>
+        <span class="en">Shoulder months</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> bepalen of de airco in de schoudermaanden (oktober–mei) de gasketel vervangt. Zomer: we openen gewoon de ramen en gebruiken de airco bij echte hitte, daarvoor is geen aparte strategie nodig.
+        <span class="en"
+          ><b>Aim:</b> decide whether the airco replaces the gas boiler in the shoulder months (October–May). Summer: we simply open the windows and use the airco in real heat, so no separate strategy is needed.
+          </span
+        >
+      </div>
+
+      <div class="item" data-id="shoulder-season">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">5.1</span>Schoudermaanden (okt–mei): lucht-lucht in plaats van gasboiler?
+              Kostenvoordeel + lagere COP acceptabel?
+            </div>
+            <div class="q-en">
+              Shoulder months (Oct–May): air-to-air instead of gas boiler? Cost
+              advantage + lower COP acceptable?
+            </div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="shoulder-strategy"
+                value="lucht-lucht"
+                onchange="saveChoice(this)"
+              /><span>Ja, lucht-lucht — Yes, air-to-air</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="shoulder-strategy"
+                value="gas"
+                onchange="saveChoice(this)"
+              /><span>Gas boiler houden — Keep gas boiler</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="shoulder-strategy"
+                value="hybride"
+                onchange="saveChoice(this)"
+              /><span>Hybride (vraag per dag) — Hybrid (choose per day)</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Voorkeur, HA automering… — Preference, HA automation…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">6</span>
+        <span class="nl">Radiatoren &amp; toekomstige lucht-water integratie</span>
+        <span class="en">Radiators &amp; future air-to-water integration</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> zeker stellen dat dit systeem kan coëxisteren met een lucht-waterpomp
+        later, zonder grote herinstallatie.
+        <span class="en"
+          ><b>Aim:</b> ensure this system can coexist with an air-to-water heat
+          pump later, without major reinstallation.</span
+        >
+      </div>
+
+      <div class="item" data-id="radiator-output">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">6.1</span>Radiatoren: leveren de bestaande radiatoren 21°C bij een lage aanvoertemperatuur (35–45°C)? Per kamer: moeten ze groter of vervangen worden (meer elementen, type 22 → 33, vloerverwarming)? Hoe berekent u dat?</div>
+            <div class="q-en">Radiators: can the existing radiators deliver 21°C at a low flow temperature (35–45°C)? Room by room: do they need to be bigger or replaced (more panels, type 22 → 33, underfloor)? How do you calculate that?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="radiator-output"
+                value="ja"
+                onchange="saveChoice(this)"
+              /><span>Ja, volstaan — Yes, sufficient</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="radiator-output"
+                value="deels"
+                onchange="saveChoice(this)"
+              /><span>Deels uitbreiden — Partly expand</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="radiator-output"
+                value="nee"
+                onchange="saveChoice(this)"
+              /><span>Grotendeels vervangen — Mostly replace</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Per kamer, kosten… — Per room, costs…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="radiator-pipes">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">6.2</span>Leidingwerk: zijn de buizen groot genoeg voor het hogere debiet van een warmtepomp (kleine temperatuurval)? Materiaal en diameter, één- of tweepijpssysteem, deels ingewerkt in chape of muur? Moet er iets vervangen worden?</div>
+            <div class="q-en">Piping: are the pipes big enough for the higher flow rate of a heat pump (small temperature drop)? Material and diameter, one-pipe or two-pipe, partly buried in screed or walls? Does anything need replacing?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="radiator-pipes"
+                value="ok"
+                onchange="saveChoice(this)"
+              /><span>Volstaat — Adequate</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="radiator-pipes"
+                value="aanpassen"
+                onchange="saveChoice(this)"
+              /><span>Aanpassingen nodig — Changes needed</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="radiator-pipes"
+                value="onzeker"
+                onchange="saveChoice(this)"
+              /><span>Onzeker — Unsure</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Diameters, ingewerkt, kosten… — Diameters, concealed, costs…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="radiator-cleaning">
+        <div class="item-row">
+          <div>
+            <div class="q-nl"><span class="qnum">6.3</span>Reiniging en conditie: moet het systeem gespoeld worden (slib, magnetiet)? Magneet-/slibfilter, waterkwaliteit, lekken, thermostaatkranen, hydraulisch afregelen? Wat kost dit en wanneer doen we het?</div>
+            <div class="q-en">Cleaning and condition: does the system need flushing (sludge, magnetite)? Magnetic/dirt filter, water quality, leaks, thermostatic valves, hydraulic balancing? What does it cost and when do we do it?</div>
+          </div>
+        </div>
+        <div class="subrow">
+          <div class="choice-group">
+            <label class="choice"
+              ><input
+                type="radio"
+                name="radiator-cleaning"
+                value="spoelen"
+                onchange="saveChoice(this)"
+              /><span>Spoelen nodig — Flush needed</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="radiator-cleaning"
+                value="niet"
+                onchange="saveChoice(this)"
+              /><span>Niet nodig — Not needed</span></label
+            >
+            <label class="choice"
+              ><input
+                type="radio"
+                name="radiator-cleaning"
+                value="onzeker"
+                onchange="saveChoice(this)"
+              /><span>Onzeker — Unsure</span></label
+            >
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Filter, afregeling, planning… — Filter, balancing, timing…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <span class="num">7</span>
+        <span class="nl">Kosten &amp; garantie</span>
+        <span class="en">Cost &amp; warranty</span>
+      </div>
+      <div class="context">
+        <b>Doel:</b> totale investeringskosten en ondersteuningsperiode helder
+        maken.
+        <span class="en"
+          ><b>Aim:</b> clarify total investment cost and support period.</span
+        >
+      </div>
+
+      <div class="item" data-id="total-cost">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">7.1</span>Totale installatiekosten: materiaal + arbeid + eventuele extra's
+              (backup-oplossing, zoneregeling, R290-meerprijs, etc.)?
+            </div>
+            <div class="q-en">
+              Total installation cost: materials + labor + any extras (backup
+              solution, zone control, R290 premium, etc.)?
+            </div>
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Totaal: €X. Breakdown: […]"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="warranty-terms">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">7.2</span>Garantieperíoden afzonderlijk: productgarantie (fabrikant) en
+              installatiegarantie (installateur)?
+            </div>
+            <div class="q-en">
+              Warranty periods separately: product warranty (manufacturer) and
+              installation warranty (installer)?
+            </div>
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Fabrikant: X jaar. Installateur: Y jaar."
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+
+      <div class="item" data-id="maintenance-plan">
+        <div class="item-row">
+          <div>
+            <div class="q-nl">
+              <span class="qnum">7.3</span>Onderhoudsmogelijkheden: jaarlijkse check, filterwisselingen,
+              service-contactpersoon?
+            </div>
+            <div class="q-en">
+              Maintenance options: annual check, filter changes, service contact?
+            </div>
+          </div>
+        </div>
+        <textarea
+          class="notes"
+          placeholder="Contactgegevens, frequentie… — Contact info, frequency…"
+          oninput="saveNote(this)"
+        ></textarea>
+      </div>
+    </section>
+
+    <footer>
+      Energie-dossier — Warmtepomp checklist · Memory aid, not a contract
+    </footer>
+    <div class="savehint">
+      Opgeslagen op dit toestel/browser · Saved on this device/browser only
+    </div>
+
+    <script>
+      (function () {
+        var STORAGE_PREFIX = "heatpumpChecklist:";
+        var items = document.querySelectorAll(".item");
+
+        function itemId(el) {
+          return el.getAttribute("data-id");
+        }
+
+        function radioGroupNames(el) {
+          var names = [];
+          el.querySelectorAll('.choice-group input[type="radio"]').forEach(
+            function (r) {
+              if (names.indexOf(r.name) === -1) names.push(r.name);
+            },
+          );
+          return names;
+        }
+
+        function loadItem(el) {
+          var id = itemId(el);
+          var textarea = el.querySelector("textarea");
+          try {
+            var note = localStorage.getItem(STORAGE_PREFIX + id + ":note");
+            if (note) textarea.value = note;
+          } catch (e) {}
+        }
+
+        window.saveNote = function (textarea) {
+          var el = textarea.closest(".item");
+          var id = itemId(el);
+          try {
+            localStorage.setItem(STORAGE_PREFIX + id + ":note", textarea.value);
+          } catch (e) {}
+        };
+
+        window.saveChoice = function (radio) {
+          try {
+            if (radio.checked) {
+              localStorage.setItem(
+                STORAGE_PREFIX + "choice:" + radio.name,
+                radio.value,
+              );
+            } else {
+              localStorage.removeItem(STORAGE_PREFIX + "choice:" + radio.name);
+            }
+          } catch (e) {}
+          updateItemDone(radio.closest(".item"));
+        };
+
+        function loadChoices() {
+          document
+            .querySelectorAll('.choice-group input[type="radio"]')
+            .forEach(function (radio) {
+              try {
+                var saved = localStorage.getItem(
+                  STORAGE_PREFIX + "choice:" + radio.name,
+                );
+                if (saved !== null && radio.value === saved)
+                  radio.checked = true;
+              } catch (e) {}
+            });
+        }
+
+        function enableUncheck() {
+          document
+            .querySelectorAll('.choice-group input[type="radio"]')
+            .forEach(function (radio) {
+              radio.addEventListener("mousedown", function () {
+                radio._wasChecked = radio.checked;
+              });
+              radio.addEventListener("click", function () {
+                if (radio._wasChecked) {
+                  setTimeout(function () {
+                    radio.checked = false;
+                    saveChoice(radio);
+                  }, 0);
+                }
+              });
+            });
+        }
+
+        window.updateItemDone = function (el) {
+          if (!el) return;
+          var names = radioGroupNames(el);
+          var allAnswered =
+            names.length > 0 &&
+            names.every(function (name) {
+              return (
+                el.querySelector('input[name="' + name + '"]:checked') !== null
+              );
+            });
+          el.classList.toggle("done", allAnswered);
+        };
+
+        items.forEach(loadItem);
+        loadChoices();
+        enableUncheck();
+        items.forEach(updateItemDone);
+      })();
+    </script>
+  </body>
+</html>

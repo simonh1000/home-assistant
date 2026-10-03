@@ -20,6 +20,12 @@ sensor.ohme_home_pro_delta_11kw_charge_slots: n/a
 
 select.ohme_home_pro_delta_11kw_charge_mode: ['smart_charge', 'max_charge', 'paused']
 
+(`max_charge` is used by the solar-soak controller to start at once; `smart_charge` follows Ohme's schedule and price cap. `paused` stops charging.)
+
+switch.ohme_home_pro_delta_11kw_require_approval: on/off (solar soak turns it off while away so sessions can start unattended)
+
+switch.garage_ohme_car_charger_solar_boost: on/off (Ohme's own solar mode; not used)
+
 select.ohme_home_pro_delta_11kw_vehicle: ['XPENG G6 (2025-2025)']
 
 ## P1

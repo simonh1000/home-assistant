@@ -1,0 +1,135 @@
+id: ev_solar_soak
+alias: "EV: Solar Soak"
+description: |
+  While nobody is home: charge the car from solar that would otherwise be wasted.
+  Levels, not edges: every minute (and whenever either sensor changes) it checks
+  binary_sensor.solar_soak_start_ok / solar_soak_keep_ok and acts only if the
+  charger is not already in the right mode. Starting and the grid-use check are
+  debounced in src/helpers/solar_soak.yaml (start 1 min, grid use 3 min). Ohme mode
+  changes are at least 10 min apart because commands go through the Ohme cloud,
+  EXCEPT that hitting the battery floor stops charging immediately: the battery
+  falls ~1%/min with the car on.
+  The Ohme cloud link is unreliable (it drops offline), so a stop is verified and
+  retried, and if it cannot be confirmed you get a notification to stop the car
+  yourself. A separate watchdog (ev-solar-soak-watchdog.yaml) keeps alerting if the
+  car still seems to be charging when it should not be.
+  Needs input_boolean.ev_solar_soak on. Battery stays in normal self-consumption.
+
+triggers:
+  - trigger: state
+    entity_id:
+      - binary_sensor.solar_soak_start_ok
+      - binary_sensor.solar_soak_keep_ok
+  - trigger: time_pattern
+    minutes: "/1"
+
+conditions: []
+
+actions:
+  - choose:
+      # Start: conditions have held, charger plugged in but not charging
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ (now() - states.select.ohme_home_pro_delta_11kw_charge_mode.last_changed).total_seconds() >= 600 }}
+          - condition: state
+            entity_id: binary_sensor.solar_soak_start_ok
+            state: "on"
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+                state: "max_charge"
+        sequence:
+          - action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: max_charge }
+          - action: script.notify_simon
+            data:
+              title: "Solar Soak: Charging"
+              message: >
+                [{{ now().strftime('%H:%M') }}] Battery {{ states('sensor.ecoflow_powerocean_battery_soc') }}%,
+                solar {{ states('sensor.ecoflow_powerocean_solar_power') }} W: car charging from surplus.
+
+      # Stop: soak mode on, charging, but it is no longer free (battery low, grid in use, sun gone)
+      - conditions:
+          - condition: state
+            entity_id: input_boolean.ev_solar_soak
+            state: "on"
+          - condition: state
+            entity_id: binary_sensor.solar_soak_keep_ok
+            state: "off"
+          - condition: state
+            entity_id: select.ohme_home_pro_delta_11kw_charge_mode
+            state: "max_charge"
+          # 10 min since the last mode change, unless the battery is at its floor
+          - condition: or
+            conditions:
+              - condition: template
+                value_template: >
+                  {{ (now() - states.select.ohme_home_pro_delta_11kw_charge_mode.last_changed).total_seconds() >= 600 }}
+              - condition: template
+                value_template: >
+                  {{ states('sensor.ecoflow_powerocean_battery_soc') | float(100)
+                     <= states('input_number.soak_soc_floor') | float(30) }}
+        sequence:
+          # Ohme can be offline, so every step carries on after a failure, the stop is
+          # confirmed (mode paused, or no longer charging) and retried once.
+          - alias: "Pause (attempt 1)"
+            action: select.select_option
+            target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+            data: { option: paused }
+            continue_on_error: true
+          - alias: "Wait for confirmation"
+            wait_template: >
+              {{ is_state('select.ohme_home_pro_delta_11kw_charge_mode', 'paused')
+                 or not is_state('sensor.ohme_home_pro_delta_11kw_status', 'charging') }}
+            timeout: "00:01:30"
+            continue_on_timeout: true
+          - if:
+              - condition: template
+                value_template: >
+                  {{ not (is_state('select.ohme_home_pro_delta_11kw_charge_mode', 'paused')
+                          or not is_state('sensor.ohme_home_pro_delta_11kw_status', 'charging')) }}
+            then:
+              - alias: "Pause (attempt 2)"
+                action: select.select_option
+                target: { entity_id: select.ohme_home_pro_delta_11kw_charge_mode }
+                data: { option: paused }
+                continue_on_error: true
+              - wait_template: >
+                  {{ is_state('select.ohme_home_pro_delta_11kw_charge_mode', 'paused')
+                     or not is_state('sensor.ohme_home_pro_delta_11kw_status', 'charging') }}
+                timeout: "00:01:30"
+                continue_on_timeout: true
+          - if:
+              - condition: template
+                value_template: >
+                  {{ is_state('select.ohme_home_pro_delta_11kw_charge_mode', 'paused')
+                     or not is_state('sensor.ohme_home_pro_delta_11kw_status', 'charging') }}
+            then:
+              - action: script.notify_simon
+                data:
+                  title: "Solar Soak: Paused"
+                  message: >
+                    [{{ now().strftime('%H:%M') }}] Battery {{ states('sensor.ecoflow_powerocean_battery_soc') }}%,
+                    grid {{ states('sensor.p1_meter_power') }} W: car paused.
+            else:
+              - action: script.notify_simon
+                data:
+                  title: "Solar Soak: COULD NOT PAUSE"
+                  message: >
+                    [{{ now().strftime('%H:%M') }}] Battery {{ states('sensor.ecoflow_powerocean_battery_soc') }}%
+                    (floor {{ states('input_number.soak_soc_floor') | int }}%). Ohme mode is
+                    {{ states('select.ohme_home_pro_delta_11kw_charge_mode') }}, status
+                    {{ states('sensor.ohme_home_pro_delta_11kw_status') }}. Stop the car from its app.
+                  data: { priority: high, ttl: 0, importance: high }
+# queued, not single: a state change (e.g. the battery floor) must not be dropped just because
+# the once-a-minute run (or a stop that is waiting for confirmation) is still in progress.
+# The choose conditions are evaluated when each queued run actually starts.
+mode: queued
+max: 5
+max_exceeded: silent
+# Keep enough history to diagnose a failed stop (the default is 5 runs, one per minute)
+trace:
+  stored_traces: 30

@@ -1,0 +1,30 @@
+id: ev_solar_soak_mode
+alias: "EV: Solar Soak Mode"
+description: |
+  Unattended charging cannot wait for someone to press Approve. Turning solar
+  soak on switches Ohme's "Require approval" off; turning it off switches it back on.
+triggers:
+  - trigger: state
+    entity_id: input_boolean.ev_solar_soak
+    to: "on"
+    id: soak_on
+  - trigger: state
+    entity_id: input_boolean.ev_solar_soak
+    to: "off"
+    id: soak_off
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: soak_on
+        sequence:
+          - action: switch.turn_off
+            target: { entity_id: switch.ohme_home_pro_delta_11kw_require_approval }
+      - conditions:
+          - condition: trigger
+            id: soak_off
+        sequence:
+          - action: switch.turn_on
+            target: { entity_id: switch.ohme_home_pro_delta_11kw_require_approval }
+mode: queued

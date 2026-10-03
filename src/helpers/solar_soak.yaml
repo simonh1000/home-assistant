@@ -1,0 +1,120 @@
+# ======================================================================
+# Solar soak: use otherwise-wasted solar for the car while nobody is home.
+#
+# Idea: once the battery is (nearly) full and strong sun is still to come,
+# any further solar would be exported. Charge the car then; the battery
+# covers the gap between solar and the charger's 6 A minimum (~4.1 kW), and
+# refills from the rest of the day's sun. Controller: automations/ev-solar-soak.yaml
+#
+#   ev_solar_soak       : master switch (also turns Ohme "require approval" off/on)
+#   soak_soc_start      : battery % at/above which soaking may start
+#   soak_soc_floor      : battery % at/below which soaking stops AT ONCE (no debounce:
+#                         with the car on the battery falls ~1%/min, and Ohme's cloud
+#                         command adds a delay on top, so the floor is a hard limit)
+#   soak_min_hours_left : daylight hours that must remain to START (a start with
+#                         little sun left would only drain the battery)
+#   soak_car_draw_w     : car draw when charging at its 6 A minimum, 3 phases
+#
+# Starting is debounced briefly (delay_on 1 min: just enough to ignore a single odd
+# reading, since the battery has headroom to absorb surplus meanwhile) and so is the grid-use check (a passing
+# cloud should not stop a charge), but the battery floor is not.
+# ======================================================================
+
+input_boolean:
+  ev_solar_soak:
+    name: "EV Solar Soak"
+    icon: mdi:solar-power-variant
+
+input_number:
+  soak_soc_start:
+    name: "Soak: Start at Battery %"
+    icon: mdi:battery-high
+    min: 10
+    max: 100
+    step: 1
+    initial: 90
+    unit_of_measurement: "%"
+  soak_soc_floor:
+    name: "Soak: Stop at Battery %"
+    icon: mdi:battery-low
+    min: 5
+    max: 80
+    step: 1
+    initial: 30
+    unit_of_measurement: "%"
+  soak_min_hours_left:
+    name: "Soak: Daylight Hours Needed to Start"
+    icon: mdi:weather-sunset-down
+    min: 0
+    max: 8
+    step: 0.5
+    initial: 3
+    unit_of_measurement: "h"
+  soak_car_draw_w:
+    name: "Soak: Car Draw at Minimum Current"
+    icon: mdi:car-electric
+    min: 1000
+    max: 11000
+    step: 10
+    initial: 4140
+    unit_of_measurement: "W"
+
+template:
+  - binary_sensor:
+      # Start: battery full enough, strong sun still to come, and solar plus the
+      # battery's available discharge can carry house + car without touching the grid.
+      - name: "Solar Soak Start OK"
+        unique_id: solar_soak_start_ok
+        icon: mdi:play-circle-outline
+        delay_on: { minutes: 1 }
+        state: >
+          {% set setting = state_attr('sun.sun', 'next_setting') %}
+          {% set hours_left = ((as_timestamp(setting) - now().timestamp()) / 3600)
+                              if is_state('sun.sun', 'above_horizon') and setting else 0 %}
+          {% set supply = states('sensor.ecoflow_powerocean_solar_power') | float(0)
+                          + states('sensor.ecoflow_powerocean_available_battery_discharge_power') | float(0) %}
+          {% set demand = states('sensor.ecoflow_powerocean_house_power') | float(0)
+                          + states('input_number.soak_car_draw_w') | float(4140) %}
+          {{ is_state('input_boolean.ev_solar_soak', 'on')
+             and states('sensor.ohme_home_pro_delta_11kw_status') in ['plugged_in', 'paused']
+             and states('sensor.ecoflow_powerocean_battery_soc') | float(0)
+                 >= states('input_number.soak_soc_start') | float(90)
+             and hours_left >= states('input_number.soak_min_hours_left') | float(3)
+             and supply >= demand }}
+
+      # Grid import must stay small. Debounced separately so a passing cloud does
+      # not stop a charge, while the battery floor below acts immediately.
+      - name: "Solar Soak Grid Free"
+        unique_id: solar_soak_grid_free
+        icon: mdi:transmission-tower-off
+        delay_off: { minutes: 3 }
+        state: "{{ states('sensor.p1_meter_power') | float(0) < 400 }}"
+
+      # Keep going: soak on, sun up, battery above its floor (immediate), grid free.
+      # Hysteresis: once off, the battery must be 3 points above the floor to turn on
+      # again, so a level hovering at the floor does not flicker (reads its own state).
+      - name: "Solar Soak Keep OK"
+        unique_id: solar_soak_keep_ok
+        icon: mdi:pause-circle-outline
+        state: >
+          {% set margin = 0 if is_state('binary_sensor.solar_soak_keep_ok', 'on') else 3 %}
+          {{ is_state('input_boolean.ev_solar_soak', 'on')
+             and is_state('sun.sun', 'above_horizon')
+             and states('sensor.ecoflow_powerocean_battery_soc') | float(0)
+                 > states('input_number.soak_soc_floor') | float(30) + margin
+             and is_state('binary_sensor.solar_soak_grid_free', 'on') }}
+
+      # Stuck: soak is on and Ohme says charging, but the car should have stopped
+      # (not OK to keep going, battery at/below the floor, or Ohme offline) for 3 min.
+      # Drives the watchdog automation's alerts.
+      - name: "Solar Soak Stuck"
+        unique_id: solar_soak_stuck
+        icon: mdi:alert-circle-outline
+        delay_on: { minutes: 3 }
+        state: >
+          {{ is_state('input_boolean.ev_solar_soak', 'on')
+             and is_state('sensor.ohme_home_pro_delta_11kw_status', 'charging')
+             and (is_state('binary_sensor.solar_soak_keep_ok', 'off')
+                  or is_state('select.ohme_home_pro_delta_11kw_charge_mode', 'unavailable')
+                  or states('sensor.ecoflow_powerocean_battery_soc') | float(100)
+                     <= states('input_number.soak_soc_floor') | float(30)) }}

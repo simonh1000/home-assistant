@@ -19,38 +19,44 @@ variables:
   ohme_state: "{{ states('sensor.ohme_home_pro_delta_11kw_status') }}"
   guardian_state: "{{ states('input_select.ev_guardian_state') }}"
 
-triggers:
-  - trigger: numeric_state
-    entity_id: sensor.p1_meter_power
-    above: 6000
-    for: { seconds: 30 }
-    id: "high_load"
-  - trigger: numeric_state
-    entity_id: sensor.p1_meter_power
-    below: 500
-    for: { minutes: 2 }
-    id: "quiet_house"
-  - trigger: numeric_state
-    entity_id: sensor.p1_meter_power
-    above: 800
-    for: { seconds: 15 }
-    id: "house_no_longer_quiet"
-  - trigger: time
-    at: "18:15:00"
-    id: "dinner_check"
-  - trigger: state
-    entity_id: sensor.ohme_home_pro_delta_11kw_status
-    to: "charging"
-    id: "dinner_check"
-  - trigger: time
-    at: "20:15:00"
-    id: "dinner_end"
-  - trigger: time_pattern
-    seconds: "/30"
-    id: "resume_check"
-  - trigger: time
-    at: "22:30:00"
-    id: "safety_net"
+# HOLIDAY MODE: the guardian is dormant while nobody is home. Every trigger below
+# is commented out, so it never runs (it would otherwise resume charging at 20:15
+# and 22:30 and fight the solar-soak controller). TO RE-ENABLE: uncomment the
+# triggers, replace `triggers: []` with `triggers:`, and remove the skip markers in
+# tests/test_ev_capacity_guardian.py and tests/test_csv_replay.py.
+triggers: []
+# triggers:
+#   - trigger: numeric_state
+#     entity_id: sensor.p1_meter_power
+#     above: 6000
+#     for: { seconds: 30 }
+#     id: "high_load"
+#   - trigger: numeric_state
+#     entity_id: sensor.p1_meter_power
+#     below: 500
+#     for: { minutes: 2 }
+#     id: "quiet_house"
+#   - trigger: numeric_state
+#     entity_id: sensor.p1_meter_power
+#     above: 800
+#     for: { seconds: 15 }
+#     id: "house_no_longer_quiet"
+#   - trigger: time
+#     at: "18:15:00"
+#     id: "dinner_check"
+#   - trigger: state
+#     entity_id: sensor.ohme_home_pro_delta_11kw_status
+#     to: "charging"
+#     id: "dinner_check"
+#   - trigger: time
+#     at: "20:15:00"
+#     id: "dinner_end"
+#   - trigger: time_pattern
+#     seconds: "/30"
+#     id: "resume_check"
+#   - trigger: time
+#     at: "22:30:00"
+#     id: "safety_net"
 
 conditions: []
 
