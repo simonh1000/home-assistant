@@ -1,12 +1,17 @@
-# Home Assistant Automations: 6kW Capacity Guardian
+# Home Assistant Automations: 
 
-This system manages EV charging and house load to ensure an approx **6.0 kW** monthly average peak in Flanders, Belgium.
+## Objectives
 
-The car currently is set to limit charging to 8A
+1) Guardian: Flemish capacity-tariff peak control : keep home charging compatible with a 6kw peak 
 
-## 🧠 The Logic (15-Min Window)
+2) Do not return energy to Fluvius, as it financially worthless
+  - Use car to soak up surplus solar energy
 
-To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
+3) Take advantage of overnight charging using the electricity company app to get better overnight prices.
+
+## 6kW Capacity Guardian
+
+This system manages EV charging and house load to ensure an approx **6.0 kW** monthly average peak in Flanders, Belgium. To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 
 - **Active Defense:** We monitor for **5 minutes above 6.5kW**.
 - **Automatic Response:** If triggered, the EV charger is paused immediately.
