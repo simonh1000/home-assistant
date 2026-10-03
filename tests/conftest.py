@@ -13,6 +13,12 @@ logging.getLogger("asyncio").setLevel(logging.WARNING)
 pytest_plugins = ["pytest_homeassistant_custom_component"]
 
 GUARDIAN_YAML_PATH = Path(__file__).parent.parent / "src" / "automations" / "ev-capacity-guardian.yaml"
+COOKING_OVER_YAML_PATH = Path(__file__).parent.parent / "src" / "automations" / "ev-cooking-over-button-handler.yaml"
+
+@pytest.fixture
+def expected_lingering_timers() -> bool:
+    """The guardian's time_pattern trigger legitimately leaves a timer running at teardown."""
+    return True
 
 @pytest.fixture
 def guardian_automation_config():
@@ -20,25 +26,20 @@ def guardian_automation_config():
         return yaml.safe_load(f)
 
 @pytest.fixture
-async def setup_ha_guardian(hass, guardian_automation_config):
+def cooking_over_automation_config():
+    with COOKING_OVER_YAML_PATH.open("r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+@pytest.fixture
+async def setup_ha_guardian(hass, guardian_automation_config, cooking_over_automation_config):
     """Set up Home Assistant components required by EV Capacity Guardian."""
     # Setup input_select
     await async_setup_component(hass, "input_select", {
         "input_select": {
             "ev_guardian_state": {
                 "name": "EV Guardian State",
-                "options": ["idle", "yielding", "cooldown"],
+                "options": ["idle", "cooking", "yielding", "cooldown"],
                 "initial": "idle"
-            }
-        }
-    })
-
-    # Setup input_boolean
-    await async_setup_component(hass, "input_boolean", {
-        "input_boolean": {
-            "ev_cooking_over": {
-                "name": "EV Cooking Over",
-                "initial": "off"
             }
         }
     })
@@ -91,7 +92,7 @@ async def setup_ha_guardian(hass, guardian_automation_config):
 
     # Load real automation file into Home Assistant core
     await async_setup_component(hass, "automation", {
-        "automation": [guardian_automation_config]
+        "automation": [guardian_automation_config, cooking_over_automation_config]
     })
 
     await hass.async_block_till_done()
