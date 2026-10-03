@@ -42,6 +42,11 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 
 - **Charge Completion:** Sends a notification to both phones when the Ohme charger finishes charging outside of Guardian pauses.
 
+### 7. [ecoflow-battery-lock.yaml](src/automations/ecoflow-battery-lock.yaml) & [ecoflow-battery-unlock.yaml](src/automations/ecoflow-battery-unlock.yaml)
+
+- **Battery Protection:** When the Ohme starts charging, switches the EcoFlow integration (MaxGrmm/EF-PowerOcean-TcpModbus) to **Hold battery** with Modbus Control on (via [ecoflow_lock_battery.yaml](src/scripts/ecoflow_lock_battery.yaml)) so the car can't drain stored battery energy — it only pulls from solar/grid. Reverts to normal self-consumption control (via [ecoflow_unlock_battery.yaml](src/scripts/ecoflow_unlock_battery.yaml): Battery Mode back to Automatic, Modbus Control off) once charging stops.
+- **Status:** untested. Uses `switch.ecoflow_powerocean_modbus_control` and `select.ecoflow_powerocean_battery_mode` — check these entity IDs exist in your install (see [TODO](#-todo)).
+
 ---
 
 ## 🏠 Dashboard Widget
@@ -67,6 +72,10 @@ The dashboard includes:
 ### [notify_simon.yaml](src/scripts/notify_simon.yaml) & [notify_partner.yaml](src/scripts/notify_partner.yaml)
 
 - Targeted notification scripts for Pixel 10 (Simon) and Pixel 8 (Partner) individually.
+
+### [ecoflow_lock_battery.yaml](src/scripts/ecoflow_lock_battery.yaml) & [ecoflow_unlock_battery.yaml](src/scripts/ecoflow_unlock_battery.yaml)
+
+- Set the EcoFlow integration's Battery Mode (Hold battery / Automatic) and Modbus Control switch, driven by the ecoflow-battery-lock/unlock automations above. The integration sends the inverter heartbeat itself.
 
 ---
 

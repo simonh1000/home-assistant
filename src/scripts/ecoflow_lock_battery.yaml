@@ -1,0 +1,17 @@
+ecoflow_lock_battery:
+  alias: "EcoFlow: Lock Battery (Car Charging)"
+  description: |
+    Uses the MaxGrmm/EF-PowerOcean-TcpModbus integration: takes control from
+    the EcoFlow app and holds the battery (no charge, no discharge) so the car
+    pulls only from solar/grid. The integration sends the inverter heartbeat
+    itself, so no loop is needed here.
+  sequence:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.ecoflow_powerocean_modbus_control
+    - action: select.select_option
+      target:
+        entity_id: select.ecoflow_powerocean_battery_mode
+      data:
+        option: hold_battery
+  mode: single
