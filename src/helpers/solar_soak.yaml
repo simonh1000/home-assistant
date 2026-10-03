@@ -91,12 +91,30 @@ template:
         state: "{{ states('sensor.p1_meter_power') | float(0) < 400 }}"
 
       # Keep going: soak on, sun up, battery above its floor (immediate), grid free.
+      # Hysteresis: once off, the battery must be 3 points above the floor to turn on
+      # again, so a level hovering at the floor does not flicker (reads its own state).
       - name: "Solar Soak Keep OK"
         unique_id: solar_soak_keep_ok
         icon: mdi:pause-circle-outline
         state: >
+          {% set margin = 0 if is_state('binary_sensor.solar_soak_keep_ok', 'on') else 3 %}
           {{ is_state('input_boolean.ev_solar_soak', 'on')
              and is_state('sun.sun', 'above_horizon')
              and states('sensor.ecoflow_powerocean_battery_soc') | float(0)
-                 > states('input_number.soak_soc_floor') | float(30)
+                 > states('input_number.soak_soc_floor') | float(30) + margin
              and is_state('binary_sensor.solar_soak_grid_free', 'on') }}
+
+      # Stuck: soak is on and Ohme says charging, but the car should have stopped
+      # (not OK to keep going, battery at/below the floor, or Ohme offline) for 3 min.
+      # Drives the watchdog automation's alerts.
+      - name: "Solar Soak Stuck"
+        unique_id: solar_soak_stuck
+        icon: mdi:alert-circle-outline
+        delay_on: { minutes: 3 }
+        state: >
+          {{ is_state('input_boolean.ev_solar_soak', 'on')
+             and is_state('sensor.ohme_home_pro_delta_11kw_status', 'charging')
+             and (is_state('binary_sensor.solar_soak_keep_ok', 'off')
+                  or is_state('select.ohme_home_pro_delta_11kw_charge_mode', 'unavailable')
+                  or states('sensor.ecoflow_powerocean_battery_soc') | float(100)
+                     <= states('input_number.soak_soc_floor') | float(30)) }}

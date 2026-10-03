@@ -1,0 +1,34 @@
+id: ev_solar_soak_watchdog
+alias: "EV: Solar Soak Watchdog"
+description: |
+  Safety net for the solar-soak stop. The Ohme cloud link drops offline now and then,
+  so a pause command can be lost. binary_sensor.solar_soak_stuck turns on when soak
+  mode is on, Ohme still reports charging, and the car should have stopped (battery
+  at its floor, grid in use, sun gone, or Ohme offline) for 3 minutes. Then: notify,
+  and repeat every 15 minutes until it is resolved. Stop the car from its own app.
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.solar_soak_stuck
+    to: "on"
+conditions: []
+actions:
+  - repeat:
+      while:
+        - condition: state
+          entity_id: binary_sensor.solar_soak_stuck
+          state: "on"
+      sequence:
+        - action: script.notify_simon
+          data:
+            title: "Solar Soak: car may still be charging"
+            message: >
+              [{{ now().strftime('%H:%M') }}] Battery {{ states('sensor.ecoflow_powerocean_battery_soc') }}%,
+              grid {{ states('sensor.p1_meter_power') }} W. Ohme mode
+              {{ states('select.ohme_home_pro_delta_11kw_charge_mode') }}, status
+              {{ states('sensor.ohme_home_pro_delta_11kw_status') }}
+              {{ '(Ohme looks offline)' if is_state('select.ohme_home_pro_delta_11kw_charge_mode', 'unavailable') else '' }}.
+              It should have stopped. Stop the car from its app.
+            data: { priority: high, ttl: 0, importance: high }
+        - delay: "00:15:00"
+mode: single
+max_exceeded: silent
