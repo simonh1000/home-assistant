@@ -15,7 +15,8 @@
 #                         little sun left would only drain the battery)
 #   soak_car_draw_w     : car draw when charging at its 6 A minimum, 3 phases
 #
-# Starting is debounced (delay_on) and so is the grid-use check (a passing
+# Starting is debounced briefly (delay_on 1 min: just enough to ignore a single odd
+# reading, since the battery has headroom to absorb surplus meanwhile) and so is the grid-use check (a passing
 # cloud should not stop a charge), but the battery floor is not.
 # ======================================================================
 
@@ -28,7 +29,7 @@ input_number:
   soak_soc_start:
     name: "Soak: Start at Battery %"
     icon: mdi:battery-high
-    min: 50
+    min: 10
     max: 100
     step: 1
     initial: 90
@@ -65,7 +66,7 @@ template:
       - name: "Solar Soak Start OK"
         unique_id: solar_soak_start_ok
         icon: mdi:play-circle-outline
-        delay_on: { minutes: 3 }
+        delay_on: { minutes: 1 }
         state: >
           {% set setting = state_attr('sun.sun', 'next_setting') %}
           {% set hours_left = ((as_timestamp(setting) - now().timestamp()) / 3600)

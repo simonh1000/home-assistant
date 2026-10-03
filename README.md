@@ -47,7 +47,7 @@ To avoid high capacity tariffs, we ensure the 15-minute average stays below 6kW:
 ### 7. [ev-solar-soak.yaml](src/automations/ev-solar-soak.yaml), [ev-solar-soak-mode.yaml](src/automations/ev-solar-soak-mode.yaml) & [solar_soak.yaml](src/helpers/solar_soak.yaml)
 
 - **Solar soak (while away):** charges the car from solar that would otherwise be exported, so no energy is wasted. The battery covers the gap between solar and the charger's 6 A minimum (~4.1 kW).
-- **Start** (`binary_sensor.solar_soak_start_ok`, held 3 min): `ev_solar_soak` on, car plugged in, battery ≥ `soak_soc_start` (90 %), at least `soak_min_hours_left` (3 h) of daylight left, and solar + available battery discharge ≥ house + car draw. Sets Ohme to `max_charge`.
+- **Start** (`binary_sensor.solar_soak_start_ok`, held 1 min): `ev_solar_soak` on, car plugged in, battery ≥ `soak_soc_start` (90 %), at least `soak_min_hours_left` (3 h) of daylight left, and solar + available battery discharge ≥ house + car draw. Sets Ohme to `max_charge`.
 - **Stop** (`binary_sensor.solar_soak_keep_ok`): **at once** when the battery reaches `soak_soc_floor` (30 %) — the battery falls ~1 %/min with the car on, so there is no debounce and no 10 min gap for this — or when the sun is down, or after 3 min of grid import ≥ 400 W (`binary_sensor.solar_soak_grid_free`, so a passing cloud doesn't stop a charge). Sets Ohme to `paused`. Other mode changes are at least 10 min apart (Ohme is cloud-controlled).
 - **Mode switch:** turning `ev_solar_soak` on switches Ohme "Require approval" off (nobody to press Approve); turning it off switches it back on.
 - Battery stays in normal self-consumption (no Modbus control needed).
@@ -114,6 +114,9 @@ Because HA resolves `!include_dir_*` paths relative to its config root, the depl
   * [ ] Prevent the car consuming energy from the battery — see above, drafted not tested
 
 * [ ] Get the car to take up the remaining capacity — drafted as solar soak (see above); thresholds to be tuned from real days, `max_charge` starting immediately is unverified
+
+* [ ] **Ohme's power reading is single-phase.** `sensor.ohme_home_pro_delta_11kw_power` is current × voltage for **one** phase (3 Oct: 5.77 A × 235 V = 1.36 kW) while the car, charging at 6 A on 3 phases, really draws ~4.1 kW (confirmed by the car, and by EcoFlow `house_power` at 4.39 kW with ~0.25 kW of house load). So the energy dashboard and Ohme app show about a third of the real power. Likely fix: a template sensor that multiplies by 3 (current × voltage × 3) and use that for dashboards and any logic. Not done yet; the solar-soak controller does not read Ohme's power.
+  * Confirmed on the same test: the 6 A cap is in effect, and `max_charge` starts a session within seconds.
 
 * [ ] Catch case when charging stops unexpectedly and not at 100% (not clear how we can know that)?
 
