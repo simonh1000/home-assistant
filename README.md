@@ -62,6 +62,72 @@ This system manages EV charging and house load to ensure an approx **6.0 kW** mo
 
 ---
 
+## 🧭 State Machines
+
+Two machines run side by side and both write the same thing: Ohme's `charge_mode`. (GitHub renders these diagrams; the ASCII version in `src/helpers/guardian.yaml` is kept for people reading the YAML.)
+
+### Guardian (`input_select.ev_guardian_state`) — dormant while away
+
+```mermaid
+stateDiagram-v2
+    [*] --> idle
+    idle --> yielding: house above 6 kW for 30 s / pause EV
+    yielding --> cooldown: house below 500 W for 2 min
+    cooldown --> yielding: house above 800 W for 15 s
+    yielding --> idle: 10 min in state and quiet, outside dinner / resume
+    cooldown --> idle: 10 min in state and quiet, outside dinner / resume
+    idle --> cooking: 18:15 / pause EV
+    yielding --> cooking: 18:15
+    cooldown --> cooking: 18:15
+    cooking --> idle: 20:15 or Done Cooking / resume
+    note right of cooking
+        EV is paused again whenever it starts
+        charging while in this state.
+        22:30 safety net: any state goes to idle
+        and a paused EV resumes.
+    end note
+```
+
+### Solar soak (`ev_solar_soak` + binary sensors)
+
+```mermaid
+stateDiagram-v2
+    [*] --> off
+    off --> waiting: soak switched on, Ohme approval off
+    waiting --> charging: start_ok for 1 min / Ohme max_charge
+    charging --> waiting: keep_ok off / Ohme paused, verified and retried
+    charging --> stuck: still charging 3 min after it should have stopped
+    stuck --> waiting: charging stops
+    waiting --> off: soak switched off, Ohme approval on
+    charging --> off: soak switched off, a running charge is NOT stopped
+    note right of waiting
+        start_ok: battery at least 90 percent,
+        3 h of daylight left, car plugged in,
+        solar plus battery can carry house and car
+    end note
+    note right of charging
+        keep_ok off: battery at the floor (30 percent,
+        immediate), sun down, or grid import above
+        400 W for 3 min. Alert every 15 min while stuck.
+    end note
+```
+
+### The shared resource: Ohme charge mode
+
+```mermaid
+flowchart LR
+    G[Guardian] -->|"paused / smart_charge"| M{{"Ohme charge_mode"}}
+    S[Solar soak] -->|"max_charge / paused"| M
+    D[Done Cooking button] -->|smart_charge| M
+    U[You, Ohme app] --> M
+    M --> C[Ohme cloud, can be offline]
+    C --> Car
+```
+
+While away the guardian's triggers are commented out, so only solar soak (and you) write to the mode. See the header of `src/automations/ev-capacity-guardian.yaml` to bring it back.
+
+---
+
 ## 🏠 Dashboard Widget
 
 The system now includes a managed dashboard **Capacity Guardian** defined in `src/ui-lovelace.yaml` and is automatically deployed to Home Assistant alongside your automations and scripts.
